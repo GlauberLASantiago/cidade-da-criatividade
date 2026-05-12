@@ -328,6 +328,7 @@
 <body>
     <audio id="bgMusic" loop preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/cidade-da-criatividade/main/musica-de-fundo.mp3"></audio>
     <audio id="coinAudio" preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/cidade-da-criatividade/main/moeda.mp3"></audio>
+    <audio id="jumpAudio" preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/cidade-da-criatividade/main/pulo.mp3"></audio>
     <audio id="carCrashAudio" preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/cidade-da-criatividade/main/colidiu.mp3"></audio>
     <audio id="victoryAudio" preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/cidade-da-criatividade/main/venceu.mp3"></audio>
 
@@ -401,7 +402,6 @@
         let joyX = 0, joyY = 0;
         let canJump = false, isLocked = false;
         let musicEnabled = true;
-        let coinGuideUntil = 0;
         let playerName = "";
         let victoryDateTime = "";
 
@@ -422,10 +422,9 @@
         const playerRadius = 2.3;
         const playerEyeHeight = 9.2;
         const coinCollectDistance = 9.0;
-        const normalJumpStrength = 110;
         const guideJumpStrength = 260;
-        const guideCoinHeight = 28;
-        const guideDurationMs = 4200;
+        const guideCoinBaseHeight = 4.4;
+        const guideCoinHeightMultiplier = 1.15;
 
         function getRoadCoordinates() {
             const coords = [];
@@ -486,6 +485,7 @@
         const audioElements = {
             bgMusic: null,
             coin: null,
+            jump: null,
             carCrash: null,
             victory: null
         };
@@ -533,6 +533,7 @@
         window.onload = function () {
             audioElements.bgMusic = document.getElementById("bgMusic");
             audioElements.coin = document.getElementById("coinAudio");
+            audioElements.jump = document.getElementById("jumpAudio");
             audioElements.carCrash = document.getElementById("carCrashAudio");
             audioElements.victory = document.getElementById("victoryAudio");
 
@@ -620,9 +621,9 @@
         }
 
         function activateCoinGuideJump() {
+            playAudio(audioElements.jump, 1.0);
             velocity.y = guideJumpStrength;
             canJump = false;
-            coinGuideUntil = performance.now() + guideDurationMs;
         }
 
         function init() {
@@ -1317,14 +1318,17 @@
             coins.forEach((coin, index) => {
                 coin.rotation.z -= 2.0 * delta;
 
-                const guideActive = performance.now() < coinGuideUntil;
-                const baseCoinHeight = guideActive ? guideCoinHeight : 4.4;
+                // As moedas acompanham a subida e a descida da câmera durante o pulo-guia.
+                const cameraExtraHeight = Math.max(0, camera.position.y - playerEyeHeight);
+                const guideLift = cameraExtraHeight * guideCoinHeightMultiplier;
+                const baseCoinHeight = guideCoinBaseHeight + guideLift;
+
                 coin.position.y = baseCoinHeight + Math.sin(time * 0.003 + index) * 0.7;
 
                 if (coin.userData.glow) {
                     coin.userData.glow.position.copy(coin.position);
                     const pulse = 1 + Math.sin(time * 0.004 + index) * 0.08;
-                    const guideScale = guideActive ? 1.75 : 1;
+                    const guideScale = 1 + Math.min(cameraExtraHeight / 28, 0.9);
                     coin.userData.glow.scale.set(pulse * guideScale, pulse * guideScale, pulse * guideScale);
                 }
             });
