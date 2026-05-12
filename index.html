@@ -3,1344 +3,1416 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Metrópolis do Saber — Criatividade & Música</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <title>Cidade da Criatividade</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌈</text></svg>">
     <style>
         :root {
-            --gold: #F5C842;
-            --gold-light: #FFE27A;
-            --gold-dark: #B8962E;
-            --bg-deep: #080C14;
-            --bg-panel: rgba(10,16,28,0.92);
-            --accent-blue: #4FC3F7;
-            --accent-green: #69F0AE;
-            --text-primary: #F0F4FF;
-            --text-secondary: #8899BB;
-            --border: rgba(245,200,66,0.25);
-            --radius: 12px;
+            --amarelo: #fbbf24;
+            --laranja: #fb923c;
+            --azul: #38bdf8;
+            --verde: #34d399;
+            --rosa: #fb7185;
+            --roxo: #a78bfa;
+            --escuro: #172554;
         }
-
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         body, html {
-            width: 100%; height: 100%; overflow: hidden;
-            background: var(--bg-deep);
-            font-family: 'DM Sans', sans-serif;
-            touch-action: none; user-select: none; -webkit-user-select: none;
-            cursor: none;
-        }
-
-        /* ─── CUSTOM CURSOR ─── */
-        #cursor {
-            position: fixed; width: 12px; height: 12px;
-            background: var(--gold); border-radius: 50%;
-            pointer-events: none; z-index: 9999;
-            transform: translate(-50%, -50%);
-            transition: transform 0.08s ease, background 0.2s;
-            mix-blend-mode: screen;
-        }
-        #cursor.active { transform: translate(-50%, -50%) scale(2.5); background: var(--gold-light); }
-
-        /* ─── START SCREEN ─── */
-        #startScreen {
-            position: fixed; inset: 0;
-            background: var(--bg-deep);
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-            z-index: 200; overflow: hidden;
-        }
-
-        .start-bg-grid {
-            position: absolute; inset: 0;
-            background-image:
-                linear-gradient(rgba(245,200,66,0.04) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(245,200,66,0.04) 1px, transparent 1px);
-            background-size: 60px 60px;
-            animation: gridScroll 20s linear infinite;
-        }
-        @keyframes gridScroll {
-            0% { background-position: 0 0; }
-            100% { background-position: 60px 60px; }
-        }
-
-        .start-glow {
-            position: absolute; width: 600px; height: 600px;
-            background: radial-gradient(circle, rgba(245,200,66,0.12) 0%, transparent 70%);
-            border-radius: 50%; pointer-events: none;
-            animation: glowPulse 4s ease-in-out infinite;
-        }
-        @keyframes glowPulse {
-            0%, 100% { opacity: 0.6; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.1); }
-        }
-
-        .start-content {
-            position: relative; z-index: 2;
-            display: flex; flex-direction: column; align-items: center;
-            gap: 24px; max-width: 680px; padding: 40px;
-        }
-
-        .start-eyebrow {
-            font-family: 'Space Mono', monospace; font-size: 12px;
-            letter-spacing: 4px; text-transform: uppercase;
-            color: var(--gold); opacity: 0.8;
-        }
-
-        .start-title {
-            font-family: 'Syne', sans-serif; font-size: clamp(2.8rem, 6vw, 5rem);
-            font-weight: 800; color: var(--text-primary); text-align: center;
-            line-height: 1.05; letter-spacing: -1px;
-        }
-        .start-title span { color: var(--gold); display: block; }
-
-        .start-desc {
-            font-size: 16px; line-height: 1.7; color: var(--text-secondary);
-            text-align: center; max-width: 520px;
-        }
-        .start-desc strong { color: var(--gold-light); font-weight: 500; }
-
-        .stats-row {
-            display: flex; gap: 32px; margin-top: 8px;
-        }
-        .stat-item {
-            display: flex; flex-direction: column; align-items: center; gap: 4px;
-        }
-        .stat-num {
-            font-family: 'Syne', sans-serif; font-size: 2rem;
-            font-weight: 800; color: var(--gold);
-        }
-        .stat-label {
-            font-family: 'Space Mono', monospace; font-size: 10px;
-            letter-spacing: 2px; text-transform: uppercase;
-            color: var(--text-secondary);
-        }
-
-        .divider {
-            width: 100%; height: 1px;
-            background: linear-gradient(90deg, transparent, var(--gold), transparent);
-            opacity: 0.4;
-        }
-
-        .start-hint {
-            font-family: 'Space Mono', monospace; font-size: 12px;
-            color: var(--text-secondary); text-align: center; line-height: 1.6;
-        }
-        .key-badge {
-            display: inline-block; background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.15); border-radius: 5px;
-            padding: 2px 7px; font-size: 11px; color: var(--text-primary);
-        }
-
-        #startBtn {
-            display: none;
-            background: var(--gold);
-            color: var(--bg-deep);
-            border: none; padding: 16px 52px;
-            font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800;
-            letter-spacing: 1px; border-radius: 50px; cursor: none;
-            transition: all 0.25s; box-shadow: 0 0 40px rgba(245,200,66,0.3);
-        }
-        #startBtn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 60px rgba(245,200,66,0.5);
-        }
-
-        #loadingStatus {
-            font-family: 'Space Mono', monospace; font-size: 13px;
-            color: var(--gold); opacity: 0.7;
-            animation: blink 1.2s step-end infinite;
-        }
-        @keyframes blink { 50% { opacity: 0.2; } }
-
-        /* ─── HUD ─── */
-        #hud {
-            position: fixed; inset: 0; pointer-events: none;
-            z-index: 50; display: none;
-        }
-
-        /* Top bar */
-        #topBar {
-            position: absolute; top: 0; left: 0; right: 0;
-            display: flex; justify-content: space-between; align-items: flex-start;
-            padding: 20px 28px; pointer-events: none;
-        }
-
-        .hud-panel {
-            background: var(--bg-panel);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            backdrop-filter: blur(12px);
-            padding: 12px 20px;
-        }
-
-        /* Coin counter */
-        #coinPanel {
-            display: flex; align-items: center; gap: 12px;
-        }
-        .coin-icon-wrap {
-            width: 36px; height: 36px;
-            background: var(--gold); border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 18px; box-shadow: 0 0 16px rgba(245,200,66,0.5);
-        }
-        .coin-info { display: flex; flex-direction: column; }
-        .coin-label {
-            font-family: 'Space Mono', monospace; font-size: 9px;
-            letter-spacing: 2px; text-transform: uppercase;
-            color: var(--text-secondary);
-        }
-        .coin-value {
-            font-family: 'Syne', sans-serif; font-size: 22px;
-            font-weight: 800; color: var(--gold); line-height: 1;
-        }
-        .coin-total { font-size: 13px; color: var(--text-secondary); font-weight: 400; }
-
-        /* Progress bar */
-        #progressWrap {
-            position: absolute; top: 84px; left: 28px; right: 28px;
-            height: 3px; background: rgba(255,255,255,0.06); border-radius: 3px;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
             overflow: hidden;
-        }
-        #progressBar {
-            height: 100%; width: 0%;
-            background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-light));
-            border-radius: 3px;
-            transition: width 0.5s cubic-bezier(0.34,1.56,0.64,1);
-            box-shadow: 0 0 10px var(--gold);
+            background: linear-gradient(180deg, #7dd3fc 0%, #bae6fd 55%, #86efac 100%);
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
-        /* Mini map placeholder / compass */
-        #compassPanel {
-            display: flex; flex-direction: column; align-items: center; gap: 4px;
-        }
-        .compass-label {
-            font-family: 'Space Mono', monospace; font-size: 9px;
-            letter-spacing: 2px; color: var(--text-secondary); text-transform: uppercase;
-        }
-        #compass {
-            width: 52px; height: 52px;
-            border: 1px solid var(--border); border-radius: 50%;
-            position: relative; display: flex; align-items: center; justify-content: center;
-        }
-        .compass-n {
-            font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 800;
-            color: #FF6B6B; position: absolute; top: 4px;
-        }
-        .compass-needle {
-            width: 2px; height: 20px;
-            background: linear-gradient(to bottom, #FF6B6B 50%, rgba(255,255,255,0.3) 50%);
-            border-radius: 2px;
-            transition: transform 0.15s;
+        #startScreen, #victoryScreen {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            color: white;
+            flex-direction: column;
+            text-align: center;
+            overflow: auto;
+            padding: 24px;
+            box-sizing: border-box;
         }
 
-        /* Crosshair */
-        #crosshair {
-            position: fixed; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            pointer-events: none; display: none; z-index: 60;
+        #startScreen {
+            background:
+                radial-gradient(circle at 20% 20%, rgba(251, 191, 36, 0.35), transparent 28%),
+                radial-gradient(circle at 80% 25%, rgba(251, 113, 133, 0.35), transparent 30%),
+                radial-gradient(circle at 45% 80%, rgba(52, 211, 153, 0.28), transparent 32%),
+                linear-gradient(135deg, rgba(30, 64, 175, 0.96), rgba(109, 40, 217, 0.95));
         }
-        .ch-dot {
-            width: 6px; height: 6px;
-            background: rgba(255,255,255,0.85); border-radius: 50%;
-            transition: all 0.15s;
-            box-shadow: 0 0 6px rgba(0,0,0,0.8);
+
+        #victoryScreen {
+            display: none;
+            background:
+                radial-gradient(circle at 18% 20%, rgba(251, 191, 36, 0.42), transparent 27%),
+                radial-gradient(circle at 83% 18%, rgba(56, 189, 248, 0.35), transparent 30%),
+                linear-gradient(135deg, rgba(6, 95, 70, 0.97), rgba(20, 83, 45, 0.96));
         }
-        .ch-ring {
-            position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 22px; height: 22px;
-            border: 1.5px solid rgba(255,255,255,0.3);
+
+        .card {
+            width: min(820px, calc(100vw - 32px));
+            padding: 30px;
+            border-radius: 32px;
+            background: rgba(255, 255, 255, 0.16);
+            box-shadow: 0 24px 70px rgba(0,0,0,0.35);
+            border: 2px solid rgba(255,255,255,0.35);
+            backdrop-filter: blur(10px);
+        }
+
+        .game-title {
+            margin: 0;
+            font-size: clamp(2.2rem, 7vw, 5rem);
+            color: #fff7ed;
+            text-shadow: 0 5px 0 rgba(0,0,0,0.16), 0 0 22px rgba(251,191,36,0.8);
+            line-height: 1.02;
+        }
+
+        .subtitle {
+            max-width: 740px;
+            margin: 20px auto;
+            line-height: 1.6;
+            font-size: 18px;
+            color: #f8fafc;
+        }
+
+        .name-row {
+            margin: 24px auto 8px;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        #playerNameInput {
+            width: min(420px, 84vw);
+            font-size: 20px;
+            padding: 15px 18px;
+            border-radius: 20px;
+            border: 3px solid rgba(251,191,36,0.95);
+            outline: none;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.12), 0 8px 20px rgba(0,0,0,0.16);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--amarelo), var(--laranja));
+            color: #1f2937;
+            border: none;
+            padding: 15px 38px;
+            font-size: 22px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-weight: 800;
+            margin-top: 18px;
+            box-shadow: 0 8px 22px rgba(0,0,0,0.35);
+            transition: transform 0.2s, filter 0.2s;
+        }
+
+        .btn:hover { transform: translateY(-2px) scale(1.04); filter: saturate(1.12); }
+        .btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
+        .credit {
+            margin-top: 26px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(255,255,255,0.25);
+            font-size: 15px;
+            color: #e0f2fe;
+            line-height: 1.55;
+        }
+
+        #hud {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            background: rgba(15, 23, 42, 0.76);
+            color: gold;
+            padding: 14px 22px;
+            border-radius: 18px;
+            font-size: 23px;
+            font-weight: 900;
+            z-index: 20;
+            border: 2px solid gold;
+            box-shadow: 0 0 18px rgba(255, 215, 0, 0.55);
+            display: none;
+        }
+
+        #nameBadge {
+            position: absolute;
+            top: 18px;
+            left: 18px;
+            background: rgba(15, 23, 42, 0.72);
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: 18px;
+            font-size: 17px;
+            font-weight: 800;
+            z-index: 20;
+            border: 2px solid rgba(255,255,255,0.35);
+            display: none;
+        }
+
+        #musicToggle {
+            position: absolute;
+            top: 76px;
+            left: 18px;
+            background: rgba(15, 23, 42, 0.78);
+            color: #fff;
+            padding: 11px 17px;
+            border-radius: 18px;
+            font-size: 16px;
+            font-weight: 800;
+            z-index: 30;
+            border: 2px solid rgba(255,255,255,0.38);
+            display: none;
+            cursor: pointer;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+        }
+
+        #musicToggle:hover {
+            background: rgba(30, 64, 175, 0.9);
+        }
+
+        #touchControls {
+            display: none;
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        #joystickZone {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            width: 140px;
+            height: 140px;
+            background: rgba(255, 255, 255, 0.16);
+            border: 2px solid rgba(255, 255, 255, 0.5);
             border-radius: 50%;
+            pointer-events: auto;
+        }
+
+        #joystickKnob {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.94);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        #cameraZone {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 50vw;
+            height: 100%;
+            pointer-events: auto;
+        }
+
+        #jumpBtn {
+            position: absolute;
+            bottom: 40px;
+            right: 40px;
+            width: 82px;
+            height: 82px;
+            background: rgba(255, 255, 255, 0.23);
+            border: 2px solid rgba(255, 255, 255, 0.62);
+            border-radius: 50%;
+            pointer-events: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            font-weight: 900;
+            color: white;
+            text-transform: uppercase;
+        }
+
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            background: rgba(255,255,255,0.92);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            display: none;
+            z-index: 5;
+            box-shadow: 0 0 5px rgba(0,0,0,0.8);
             transition: all 0.2s;
         }
-        #crosshair.active .ch-dot {
-            background: var(--gold);
-            box-shadow: 0 0 8px var(--gold);
-        }
-        #crosshair.active .ch-ring {
-            border-color: var(--gold);
-            transform: translate(-50%, -50%) scale(1.4);
+
+        #audioIndicator {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            display: none;
+            z-index: 20;
+            box-shadow: 0 8px 22px rgba(0,0,0,0.25);
         }
 
-        /* Reading indicator */
-        #readingPanel {
-            position: fixed; bottom: 40px; left: 50%;
-            transform: translateX(-50%) translateY(80px);
-            background: var(--bg-panel);
-            border: 1px solid var(--gold);
-            border-radius: 50px;
-            padding: 10px 24px;
-            display: flex; align-items: center; gap: 10px;
-            backdrop-filter: blur(12px);
-            font-family: 'Space Mono', monospace; font-size: 12px;
-            color: var(--gold); letter-spacing: 1px;
-            z-index: 60; pointer-events: none;
-            transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
-            opacity: 0;
-        }
-        #readingPanel.visible {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
-        .reading-dot {
-            width: 8px; height: 8px; border-radius: 50%;
-            background: var(--gold);
-            animation: readPulse 1s ease-in-out infinite;
-        }
-        @keyframes readPulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.7); }
+        #audioIndicator {
+            top: 20px;
+            background: rgba(245, 158, 11, 0.92);
         }
 
-        /* Coin collect FX */
-        .coin-fx {
-            position: fixed; pointer-events: none; z-index: 100;
-            font-family: 'Syne', sans-serif; font-weight: 800;
-            font-size: 22px; color: var(--gold);
-            text-shadow: 0 0 20px rgba(245,200,66,0.8);
-            animation: coinFx 0.9s forwards;
-        }
-        @keyframes coinFx {
-            0% { opacity: 1; transform: translateY(0) scale(1); }
-            100% { opacity: 0; transform: translateY(-70px) scale(1.3); }
+        #certificate {
+            width: min(760px, calc(100vw - 38px));
+            background: #fffdf5;
+            color: #1f2937;
+            border-radius: 28px;
+            padding: 34px 28px;
+            border: 8px double #f59e0b;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+            box-sizing: border-box;
         }
 
-        /* Lesson flash */
-        #lessonFlash {
-            position: fixed; top: 50%; left: 50%;
-            transform: translate(-50%, -50%) scale(0.9);
-            background: var(--bg-panel); border: 1px solid var(--gold);
-            border-radius: 16px; padding: 28px 36px;
-            max-width: 420px; text-align: center;
-            backdrop-filter: blur(20px);
-            z-index: 80; pointer-events: none;
-            opacity: 0; transition: all 0.3s;
-        }
-        #lessonFlash.show {
-            opacity: 1; transform: translate(-50%, -50%) scale(1);
-        }
-        #lessonFlash .lf-num {
-            font-family: 'Space Mono', monospace; font-size: 11px;
-            letter-spacing: 3px; color: var(--gold); margin-bottom: 8px;
-        }
-        #lessonFlash .lf-title {
-            font-family: 'Syne', sans-serif; font-size: 18px;
-            font-weight: 700; color: var(--text-primary); margin-bottom: 6px;
-        }
-        #lessonFlash .lf-text {
-            font-size: 13px; line-height: 1.6; color: var(--text-secondary);
+        #certificate h2 {
+            margin: 0;
+            color: #b45309;
+            font-size: clamp(2rem, 5vw, 3.6rem);
         }
 
-        /* ─── TOUCH CONTROLS ─── */
-        #touchControls {
-            display: none; position: fixed; inset: 0;
-            pointer-events: none; z-index: 55;
-        }
-        #joystickZone {
-            position: absolute; bottom: 40px; left: 40px;
-            width: 130px; height: 130px;
-            background: rgba(245,200,66,0.05);
-            border: 1.5px solid rgba(245,200,66,0.2);
-            border-radius: 50%; pointer-events: auto;
-        }
-        #joystickKnob {
-            position: absolute; top: 50%; left: 50%;
-            width: 54px; height: 54px;
-            background: rgba(245,200,66,0.9); border-radius: 50%;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 20px rgba(245,200,66,0.4);
-        }
-        #cameraZone {
-            position: absolute; top: 0; right: 0;
-            width: 55vw; height: 100%; pointer-events: auto;
-        }
-        #jumpBtn {
-            position: absolute; bottom: 50px; right: 50px;
-            width: 70px; height: 70px;
-            background: rgba(245,200,66,0.12);
-            border: 1.5px solid rgba(245,200,66,0.35); border-radius: 50%;
-            pointer-events: auto; display: flex; align-items: center; justify-content: center;
-            font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700;
-            color: var(--gold); text-transform: uppercase; letter-spacing: 1px;
+        #certificateName {
+            color: #1d4ed8;
+            font-weight: 900;
+            font-size: clamp(1.8rem, 4vw, 3rem);
+            margin: 20px 0 8px;
         }
 
-        /* ─── VICTORY SCREEN ─── */
-        #victoryScreen {
-            position: fixed; inset: 0;
-            background: var(--bg-deep);
-            display: none; flex-direction: column;
-            justify-content: center; align-items: center;
-            z-index: 300; overflow: hidden;
+        .victory-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 16px;
         }
-        .victory-bg {
-            position: absolute; inset: 0;
-            background: radial-gradient(circle at 50% 40%, rgba(245,200,66,0.18) 0%, transparent 65%);
+
+        .loading {
+            animation: pulseText 1.5s infinite;
+            color: #fef3c7;
+            font-weight: bold;
         }
-        .victory-particles {
-            position: absolute; inset: 0;
-            background-image: radial-gradient(circle, var(--gold) 1px, transparent 1px);
-            background-size: 40px 40px;
-            opacity: 0.08;
-            animation: particleFloat 8s linear infinite;
-        }
-        @keyframes particleFloat { 100% { background-position: 40px 40px; } }
-        .victory-content {
-            position: relative; z-index: 2;
-            display: flex; flex-direction: column; align-items: center; gap: 24px;
-            padding: 40px; text-align: center;
-        }
-        .victory-badge {
-            font-size: 72px; animation: badgePop 0.6s cubic-bezier(0.34,1.56,0.64,1);
-        }
-        @keyframes badgePop {
-            0% { transform: scale(0); } 100% { transform: scale(1); }
-        }
-        .victory-title {
-            font-family: 'Syne', sans-serif; font-size: clamp(3rem, 8vw, 5.5rem);
-            font-weight: 800; color: var(--gold);
-            letter-spacing: -2px; line-height: 1;
-        }
-        .victory-subtitle {
-            font-size: 18px; color: var(--text-secondary); max-width: 480px; line-height: 1.6;
-        }
-        #replayBtn {
-            background: transparent; border: 1.5px solid var(--gold);
-            color: var(--gold); padding: 14px 44px;
-            font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700;
-            letter-spacing: 2px; text-transform: uppercase;
-            border-radius: 50px; cursor: none;
-            transition: all 0.25s;
-        }
-        #replayBtn:hover {
-            background: var(--gold); color: var(--bg-deep);
-            box-shadow: 0 0 40px rgba(245,200,66,0.4);
+
+        @keyframes pulseText {
+            0% { opacity: 0.55; }
+            50% { opacity: 1; }
+            100% { opacity: 0.55; }
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
+    <audio id="bgMusic" loop preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/cidade-da-criatividade/main/musica-de-fundo.mp3"></audio>
+    <audio id="coinAudio" preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/cidade-da-criatividade/main/moeda.mp3"></audio>
+    <audio id="carCrashAudio" preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/cidade-da-criatividade/main/colidiu.mp3"></audio>
+    <audio id="victoryAudio" preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/cidade-da-criatividade/main/venceu.mp3"></audio>
 
-<div id="cursor"></div>
+    <div id="startScreen">
+        <div class="card">
+            <h1 class="game-title">🌈 Cidade da Criatividade</h1>
+            <p class="subtitle">
+                Explore uma cidade alegre, encontre as <strong>30 moedas douradas</strong> e descubra murais sobre criatividade e música.
+                Ao coletar todas as moedas, você receberá um certificado para baixar e entregar no Moodle.
+            </p>
 
-<!-- ─── START SCREEN ─── -->
-<div id="startScreen">
-    <div class="start-bg-grid"></div>
-    <div class="start-glow"></div>
-    <div class="start-content">
-        <div class="start-eyebrow">Jogo Educativo 3D · v2.0</div>
-        <div class="start-title">
-            Metrópolis
-            <span>do Saber</span>
-        </div>
-        <p class="start-desc">
-            Explore uma cidade viva repleta de conhecimento. Cada <strong>moeda de ouro</strong> esconde uma lição sobre <strong>criatividade e música</strong> — colete todas para completar sua jornada.
-        </p>
-        <div class="divider"></div>
-        <div class="stats-row">
-            <div class="stat-item">
-                <div class="stat-num">30</div>
-                <div class="stat-label">Lições</div>
+            <div class="name-row">
+                <input id="playerNameInput" type="text" maxlength="70" autocomplete="name" placeholder="Digite seu nome completo">
             </div>
-            <div class="stat-item">
-                <div class="stat-num">30</div>
-                <div class="stat-label">Moedas</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-num">∞</div>
-                <div class="stat-label">Descoberta</div>
-            </div>
-        </div>
-        <div class="divider"></div>
-        <div class="start-hint" id="controlsHint">
-            <span class="key-badge">W A S D</span> Mover &nbsp;·&nbsp;
-            <span class="key-badge">Mouse</span> Olhar &nbsp;·&nbsp;
-            <span class="key-badge">Espaço</span> Pular
-        </div>
-        <div id="loadingStatus">▍ Construindo a cidade...</div>
-        <button id="startBtn">INICIAR MISSÃO</button>
-    </div>
-</div>
 
-<!-- ─── VICTORY SCREEN ─── -->
-<div id="victoryScreen">
-    <div class="victory-bg"></div>
-    <div class="victory-particles"></div>
-    <div class="victory-content">
-        <div class="victory-badge">🏆</div>
-        <div class="victory-title">MISSÃO<br>COMPLETA</div>
-        <p class="victory-subtitle">Você explorou toda a metrópolis, coletou 30 moedas e absorveu todas as lições sobre criatividade e música. Parabéns!</p>
-        <div class="divider" style="max-width:300px; margin:0 auto;"></div>
-        <button id="replayBtn" onclick="location.reload()">↺ JOGAR NOVAMENTE</button>
-    </div>
-</div>
+            <p id="nameWarning" style="display:none; color:#fde68a; font-weight:800; margin:8px 0 0;">
+                Digite seu nome para iniciar o desafio.
+            </p>
 
-<!-- ─── HUD ─── -->
-<div id="hud">
-    <div id="topBar">
-        <div class="hud-panel" id="coinPanel">
-            <div class="coin-icon-wrap">🪙</div>
-            <div class="coin-info">
-                <span class="coin-label">Moedas</span>
-                <div class="coin-value">
-                    <span id="coinCount">0</span><span class="coin-total"> / 30</span>
-                </div>
-            </div>
-        </div>
-        <div class="hud-panel" id="compassPanel">
-            <div class="compass-label">Bússola</div>
-            <div id="compass">
-                <div class="compass-n">N</div>
-                <div class="compass-needle" id="compassNeedle"></div>
+            <p id="startMsg" class="loading">Construindo a cidade e espalhando as moedas...</p>
+            <button id="startBtn" class="btn" style="display:none;">Iniciar desafio</button>
+
+            <div class="credit">
+                <strong>Desenvolvido pelo professor Glauber Santiago — DAC/UFSCar</strong><br>
+                servidores.ufscar.br/glauber/ • sites.google.com/view/glauberia
             </div>
         </div>
     </div>
-    <div id="progressWrap"><div id="progressBar"></div></div>
-</div>
 
-<!-- ─── CROSSHAIR ─── -->
-<div id="crosshair">
-    <div class="ch-dot"></div>
-    <div class="ch-ring"></div>
-</div>
+    <div id="victoryScreen">
+        <div id="certificate">
+            <h2>🎉 Certificado de Conclusão 🎉</h2>
+            <p style="font-size:20px; margin:18px 0 4px;">Certificamos que</p>
+            <div id="certificateName">Aluno(a)</div>
+            <p style="font-size:20px; line-height:1.55; margin:12px auto; max-width:650px;">
+                terminou o desafio <strong>Cidade da Criatividade</strong>, encontrando as 30 moedas e completando a exploração dos murais sobre criatividade e música.
+            </p>
+            <p id="certificateDate" style="font-size:17px; color:#475569; margin-top:18px;"></p>
+            <p style="font-size:14px; color:#64748b; margin-top:24px;">
+                Desenvolvido pelo professor Glauber Santiago — DAC/UFSCar
+            </p>
+        </div>
+        <div class="victory-actions">
+            <button class="btn" onclick="downloadCertificate()">Baixar certificado</button>
+            <button class="btn" onclick="location.reload()">Jogar novamente</button>
+        </div>
+    </div>
 
-<!-- ─── READING PANEL ─── -->
-<div id="readingPanel">
-    <div class="reading-dot"></div>
-    <span>LENDO MURAL</span>
-</div>
+    <div id="hud">🪙 Moedas: <span id="coinCount">0</span> / 30</div>
+    <div id="nameBadge">👤 <span id="playerBadgeName"></span></div>
+    <button id="musicToggle" type="button">🔊 Música: ligada</button>
 
-<!-- ─── LESSON FLASH ─── -->
-<div id="lessonFlash">
-    <div class="lf-num" id="lfNum">LIÇÃO 01 / 30</div>
-    <div class="lf-title" id="lfTitle">Título</div>
-    <div class="lf-text" id="lfText"></div>
-</div>
+    <div id="touchControls">
+        <div id="joystickZone"><div id="joystickKnob"></div></div>
+        <div id="cameraZone"></div>
+        <div id="jumpBtn">Pular</div>
+    </div>
 
-<!-- ─── TOUCH CONTROLS ─── -->
-<div id="touchControls">
-    <div id="joystickZone"><div id="joystickKnob"></div></div>
-    <div id="cameraZone"></div>
-    <div id="jumpBtn">PULAR</div>
-</div>
+    <div id="crosshair"></div>
+    <div id="audioIndicator">🔊 Lendo mural...</div>
 
-<script>
-// ─── GLOBALS ─────────────────────────────────────────────────────────────────
-let camera, scene, renderer;
-let prevTime = performance.now();
-const velocity = new THREE.Vector3();
-const direction = new THREE.Vector3();
-const euler = new THREE.Euler(0, 0, 0, 'YXZ');
+    <script>
+        let camera, scene, renderer;
+        let prevTime = performance.now();
+        const velocity = new THREE.Vector3();
+        const direction = new THREE.Vector3();
+        const euler = new THREE.Euler(0, 0, 0, "YXZ");
 
-let moveForward=false, moveBackward=false, moveLeft=false, moveRight=false;
-let joyX=0, joyY=0;
-let canJump=false, isLocked=false;
+        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+        let lookUp = false, lookDown = false, lookLeftArrow = false, lookRightArrow = false;
+        let joyX = 0, joyY = 0;
+        let canJump = false, isLocked = false;
+        let musicEnabled = true;
+        let coinGuideUntil = 0;
+        let playerName = "";
+        let victoryDateTime = "";
 
-const interactablePanels = [];
-const cars = [];
-const coins = [];
-let coinsCollected = 0;
-let lastSpokenText = "";
-const synth = window.speechSynthesis;
-let gameStartedTime = 0;
+        const interactablePanels = [];
+        const cars = [];
+        const coins = [];
+        const colliders = [];
+        let coinsCollected = 0;
 
-const CITY = 750, BLOCK = 60, ROAD = 16;
-let audioCtx;
+        let lastSpokenText = "";
+        let gameStartedTime = 0;
+        let lastCarCrashSound = 0;
 
-// ─── CUSTOM CURSOR ────────────────────────────────────────────────────────────
-const cursorEl = document.getElementById('cursor');
-document.addEventListener('mousemove', e => {
-    cursorEl.style.left = e.clientX + 'px';
-    cursorEl.style.top = e.clientY + 'px';
-});
-document.querySelectorAll('button').forEach(btn => {
-    btn.addEventListener('mouseenter', () => cursorEl.classList.add('active'));
-    btn.addEventListener('mouseleave', () => cursorEl.classList.remove('active'));
-});
+        const synth = window.speechSynthesis;
+        const citySize = 540;
+        const blockSize = 60;
+        const roadWidth = 20;
+        const playerRadius = 2.3;
+        const playerEyeHeight = 9.2;
+        const coinCollectDistance = 9.0;
+        const normalJumpStrength = 110;
+        const guideJumpStrength = 260;
+        const guideCoinHeight = 28;
+        const guideDurationMs = 4200;
 
-// ─── AUDIO CONTEXT ────────────────────────────────────────────────────────────
-function initAudio() {
-    if (audioCtx) return;
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-}
+        function getRoadCoordinates() {
+            const coords = [];
+            const half = citySize / 2;
 
-function playCoinSound() {
-    if (!audioCtx) return;
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    const t = audioCtx.currentTime;
-    [900, 1100, 1400].forEach((freq, i) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'sine'; osc.frequency.value = freq;
-        gain.gain.setValueAtTime(0, t + i * 0.06);
-        gain.gain.linearRampToValueAtTime(0.22, t + i * 0.06 + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, t + i * 0.06 + 0.25);
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(t + i * 0.06); osc.stop(t + i * 0.06 + 0.3);
-    });
-}
-
-function playVictorySound() {
-    if (!audioCtx) return;
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    const t = audioCtx.currentTime;
-    const melody = [523.25, 659.25, 783.99, 1046.5, 987.77, 1046.5];
-    melody.forEach((freq, i) => {
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = 'triangle'; osc.frequency.value = freq;
-        const st = t + i * 0.18;
-        gain.gain.setValueAtTime(0.3, st);
-        gain.gain.exponentialRampToValueAtTime(0.001, st + 0.5);
-        osc.connect(gain); gain.connect(audioCtx.destination);
-        osc.start(st); osc.stop(st + 0.5);
-    });
-}
-
-// ─── CONTENT ─────────────────────────────────────────────────────────────────
-const contents = [
-    "A criatividade não é um dom reservado a poucas pessoas; ela aparece quando o cérebro combina experiências antigas de um jeito novo. Isso acontece na arte, na ciência e também na música, quando um músico transforma um padrão simples em algo expressivo. Quanto mais repertório a pessoa acumula, mais material ela tem para criar conexões inesperadas.",
-    "Uma curiosidade sobre a criatividade é que muitas ideias parecem surgir do nada, mas na verdade costumam nascer de longos períodos de observação silenciosa. No estudo musical, isso significa que ouvir com atenção, repetir e experimentar são etapas invisíveis da invenção. O aluno que escuta mais do que apenas toca passa a descobrir possibilidades que antes pareciam escondidas.",
-    "Criar não é apenas inventar algo totalmente novo; muitas vezes é reorganizar o que já existe. Na música, isso acontece quando um ritmo conhecido ganha outra acentuação, um acorde comum recebe uma nova função ou uma melodia é ornamentada de forma pessoal. Essa visão ajuda o músico a perceber que a teoria não limita, mas amplia.",
-    "A improvisação é uma das formas mais claras de criatividade musical porque exige decisão rápida, escuta ativa e memória sonora. Quando o músico improvisa, ele treina a capacidade de responder ao presente sem perder a coerência musical. Isso também fortalece o aprendizado da técnica, da harmonia e do fraseado.",
-    "Há uma ligação forte entre criatividade e erro. Muitas descobertas criativas acontecem quando alguém faz algo 'errado' e percebe que o resultado pode ser interessante. Na prática instrumental e vocal, aceitar o erro como parte do processo ajuda o estudante a tocar com mais liberdade e menos medo.",
-    "A criatividade cresce quando há diversidade de estímulos. Um músico que ouve estilos diferentes, lê, observa a natureza, conversa com pessoas variadas e experimenta novas sonoridades amplia sua capacidade de criar. A teoria musical se torna mais viva quando é conectada a experiências reais e não apenas a exercícios abstratos.",
-    "O silêncio também faz parte da criatividade. Em música, as pausas são tão importantes quanto as notas, e isso vale para o pensamento criativo: parar, refletir e respirar pode gerar soluções melhores do que insistir sem pausa. Muitas vezes uma ideia musical aparece depois de um intervalo de descanso mental.",
-    "A criatividade musical não depende apenas de inspiração, mas também de vocabulário. Quem conhece escalas, acordes, ritmos e formas musicais tem mais recursos para se expressar com clareza. Aprender teoria, portanto, não é decorar regras, e sim adquirir ferramentas para falar musicalmente com mais autonomia.",
-    "Um músico criativo costuma ouvir de maneira analítica e sensível ao mesmo tempo. Ele percebe timbre, textura, dinâmica, condução de vozes e função harmônica, mas também se deixa afetar pela emoção da música. Essa combinação de análise e sensibilidade fortalece tanto a interpretação quanto a composição.",
-    "Brincar é uma porta importante para a criatividade. Quando o estudante experimenta sem se preocupar imediatamente em acertar, ele descobre possibilidades que o ensino formal às vezes esconde. Na voz e nos instrumentos, brincar com ritmo, altura, articulação e timbre pode abrir caminhos muito ricos.",
-    "A repetição não é inimiga da criatividade; ela pode ser a base dela. Ao repetir um exercício, o músico começa a notar pequenas variações e a perceber novas camadas de sentido. A partir dessa repetição consciente, surgem interpretações pessoais mais profundas e invenções mais maduras.",
-    "Existe um poder criativo na escuta de si mesmo. Gravando a própria voz ou o próprio instrumento, o músico ganha um espelho sonoro que revela detalhes invisíveis no momento da execução. Essa autoescuta ajuda na correção técnica, na expressão e na formação de uma identidade musical mais consistente.",
-    "A criatividade em música muitas vezes nasce do encontro entre ordem e liberdade. A teoria oferece estrutura, enquanto a imaginação oferece movimento. Quando o músico aprende a navegar entre essas duas forças, ele toca com mais consciência e cria com mais segurança.",
-    "Uma das grandes curiosidades da criatividade é que ela melhora quando a pessoa faz perguntas melhores. Em vez de perguntar apenas como tocar certo, o músico pode perguntar que sentimento quer transmitir, que cor sonora combina aqui ou que outra solução harmônica poderia existir. Perguntas assim expandem o processo de aprendizado.",
-    "O corpo influencia a criatividade musical. Postura, respiração, coordenação e relaxamento afetam diretamente a maneira como o som sai e como a mente organiza ideias. Por isso, estudar música com atenção corporal costuma tornar a execução mais livre e a imaginação mais ativa.",
-    "A criatividade também tem relação com a memória. Quando o músico memoriza melodias, progressões e padrões rítmicos, ele passa a manipular esses elementos com mais facilidade. Essa memória não serve só para decorar repertório; ela cria uma base para improvisar, compor e interpretar com mais personalidade.",
-    "Muitos músicos criativos aprendem muito observando limites. Um conjunto pequeno de notas, uma voz com alcance específico ou um instrumento com certa timbragem podem estimular soluções originais. Os limites, longe de impedir a arte, podem funcionar como estímulo para a invenção musical.",
-    "Uma curiosidade interessante é que a criatividade costuma aparecer em ambientes onde é permitido experimentar sem punição imediata. No ensino musical, isso significa que o aluno precisa de espaço para tentar, errar, ouvir e tentar de novo. Quanto mais seguro ele se sente, mais ele se arrisca a criar.",
-    "A relação entre teoria musical e criatividade é mais íntima do que muitos imaginam. A teoria não existe apenas para explicar o que já foi feito; ela também ajuda a prever possibilidades e a abrir caminhos para novas escolhas. Entender função harmônica, contraponto e forma pode enriquecer a improvisação e a composição.",
-    "Na criatividade musical, a imitação pode ser um passo importante antes da originalidade. O aluno que estuda grandes intérpretes e compositores aprende estratégias, vocabulário e estilo. Depois, com maturidade, ele começa a transformar essa herança em uma voz própria.",
-    "Um músico mais criativo geralmente cultiva curiosidade diária. Ele pergunta por que uma passagem soa de certo modo, como um timbre muda a emoção da peça e o que aconteceria se uma frase fosse reorganizada. Essa atitude investigativa transforma o estudo em descoberta.",
-    "A criatividade cresce quando a pessoa consegue mudar de perspectiva. Em música, isso pode significar ouvir uma peça como ouvinte, como intérprete, como arranjador e como compositor. Cada ponto de vista revela detalhes diferentes e fortalece a compreensão global do fazer musical.",
-    "O treinamento musical pode aumentar a criatividade porque melhora a atenção e a percepção de padrões. Quanto mais o estudante reconhece estruturas, mais ele consegue quebrá-las de maneira consciente. A liberdade criativa, nesse sentido, nasce do conhecimento e não da ignorância.",
-    "Há criatividade quando o músico transforma emoção em forma. Sentir muito não basta; é preciso organizar esse sentimento em ritmo, melodia, harmonia, fraseado e dinâmica. Esse processo é essencial tanto para quem canta quanto para quem toca qualquer instrumento.",
-    "O aprendizado musical também é criativo quando envolve exploração tímbrica. Mudar a intensidade, a articulação, o ataque, o vibrato ou a maneira de tocar uma frase pode gerar interpretações muito diferentes. Pequenas escolhas sonoras tornam o estudo mais vivo e expressivo.",
-    "A criatividade é fortalecida pelo repertório, mas não se resume a copiar referências. Um músico que conhece estilos, épocas e linguagens amplia seu universo de possibilidades e, com o tempo, combina essas referências de maneira pessoal. A originalidade costuma surgir do diálogo entre influências e experiência própria.",
-    "A improvisação vocal é uma excelente forma de desenvolver criatividade porque une escuta, memória e resposta corporal imediata. Ao experimentar sílabas, intervalos, melismas e ritmos, o cantor percebe a voz como instrumento de invenção. Isso melhora inclusive a afinação e a consciência musical.",
-    "A criatividade na teoria musical aparece quando o estudante entende padrões e começa a combiná-los com intenção. Em vez de apenas nomear acordes ou intervalos, ele passa a usá-los como ferramentas de expressão. A teoria, assim, deixa de ser um fim em si mesma e se torna um meio para criar.",
-    "Outro aspecto curioso é que a criatividade se alimenta de hábitos. Reservar momentos regulares para ouvir, tocar, escrever, improvisar e analisar música cria uma disciplina fértil. A inspiração costuma encontrar mais facilmente quem já está em movimento.",
-    "No fundo, criatividade é a capacidade de continuar aprendendo sem perder a capacidade de surpreender. Na música, isso significa estudar técnica, teoria e repertório, mas sempre deixando espaço para a descoberta pessoal. O músico criativo não apenas executa o que já existe: ele participa da criação viva do som."
-];
-
-const lessonTitles = [
-    "Criatividade como Combinação","Observação e Invenção","Reorganizar o Existente",
-    "O Poder da Improvisação","Aprender com o Erro","Diversidade de Estímulos",
-    "A Força do Silêncio","Vocabulário Musical","Análise e Sensibilidade",
-    "Brincar para Criar","Repetição Consciente","Escutar a Si Mesmo",
-    "Ordem e Liberdade","Perguntas que Expandem","Corpo e Criatividade",
-    "Memória Criativa","Criar dentro dos Limites","Ambientes Seguros",
-    "Teoria como Possibilidade","Imitar para Inventar","Curiosidade Diária",
-    "Mudar de Perspectiva","Conhecimento e Liberdade","Emoção em Forma",
-    "Exploração Tímbrica","Originalidade e Referências","Improvisação Vocal",
-    "Teoria como Ferramenta","Hábitos Criativos","O Músico que Surpreende"
-];
-
-const lessons = contents.map((text, i) => ({ title: lessonTitles[i], text, num: i+1 }));
-
-const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-
-// ─── INIT ─────────────────────────────────────────────────────────────────────
-window.onload = function () {
-    init();
-    animate();
-
-    if (isTouchDevice) {
-        document.getElementById('controlsHint').innerHTML =
-            'Use o <strong style="color:var(--gold)">joystick</strong> para mover · <strong style="color:var(--gold)">Deslize</strong> para olhar';
-    }
-
-    document.getElementById('loadingStatus').textContent = '✓ Cidade construída. Pronto para explorar!';
-    document.getElementById('loadingStatus').style.animation = 'none';
-    document.getElementById('loadingStatus').style.color = 'var(--accent-green)';
-    document.getElementById('startBtn').style.display = 'block';
-    document.getElementById('startBtn').addEventListener('click', startGame);
-};
-
-function startGame() {
-    initAudio();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    document.getElementById('startScreen').style.display = 'none';
-    document.getElementById('crosshair').style.display = 'block';
-    document.getElementById('hud').style.display = 'block';
-    gameStartedTime = performance.now();
-
-    if (isTouchDevice) {
-        document.getElementById('touchControls').style.display = 'block';
-        setupTouchControls();
-    } else {
-        document.body.requestPointerLock();
-    }
-
-    if (synth.getVoices().length === 0) synth.speak(new SpeechSynthesisUtterance(''));
-}
-
-// ─── SCENE INIT ───────────────────────────────────────────────────────────────
-function init() {
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x1a2744);
-    scene.fog = new THREE.FogExp2(0x1a2744, 0.0022);
-
-    camera = new THREE.PerspectiveCamera(72, window.innerWidth / window.innerHeight, 0.1, 1200);
-    camera.position.set(0, 5, 0);
-
-    // Lighting
-    scene.add(new THREE.AmbientLight(0x334466, 0.7));
-
-    const dirLight = new THREE.DirectionalLight(0xffd090, 1.1);
-    dirLight.position.set(150, 250, 80);
-    dirLight.castShadow = true;
-    dirLight.shadow.mapSize.set(2048, 2048);
-    dirLight.shadow.camera.near = 1;
-    dirLight.shadow.camera.far = 1200;
-    [-400, 400, -400, 400].forEach((v, i) => {
-        if (i % 2 === 0) dirLight.shadow.camera.left = v, dirLight.shadow.camera.right = v;
-        else dirLight.shadow.camera.top = v, dirLight.shadow.camera.bottom = v;
-    });
-    dirLight.shadow.camera.left = -450; dirLight.shadow.camera.right = 450;
-    dirLight.shadow.camera.top = 450; dirLight.shadow.camera.bottom = -450;
-    scene.add(dirLight);
-
-    // Moonlight fill
-    const fillLight = new THREE.DirectionalLight(0x4466aa, 0.3);
-    fillLight.position.set(-100, 80, -50);
-    scene.add(fillLight);
-
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.1;
-    document.body.appendChild(renderer.domElement);
-
-    window.addEventListener('resize', onWindowResize);
-    setupDesktopControls();
-    buildWorld();
-}
-
-// ─── TEXTURE GENERATION ───────────────────────────────────────────────────────
-function createTextTexture(lesson) {
-    const W = 1024, H = 768;
-    const canvas = document.createElement('canvas');
-    canvas.width = W; canvas.height = H;
-    const ctx = canvas.getContext('2d');
-
-    // Dark premium background
-    const grad = ctx.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0, '#0D1424');
-    grad.addColorStop(1, '#0A0F1C');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, W, H);
-
-    // Gold border
-    const bw = 8;
-    const borderGrad = ctx.createLinearGradient(0, 0, W, H);
-    borderGrad.addColorStop(0, '#F5C842');
-    borderGrad.addColorStop(0.5, '#FFE27A');
-    borderGrad.addColorStop(1, '#B8962E');
-    ctx.strokeStyle = borderGrad;
-    ctx.lineWidth = bw;
-    ctx.strokeRect(bw/2, bw/2, W-bw, H-bw);
-
-    // Inner subtle border
-    ctx.strokeStyle = 'rgba(245,200,66,0.15)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(20, 20, W-40, H-40);
-
-    // Lesson number badge
-    ctx.fillStyle = '#F5C842';
-    ctx.beginPath();
-    ctx.roundRect(36, 36, 130, 38, 20);
-    ctx.fill();
-    ctx.fillStyle = '#0A0F1C';
-    ctx.font = 'bold 17px "Space Mono", monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText(`LIÇÃO ${String(lesson.num).padStart(2,'0')}`, 101, 61);
-
-    // Title
-    ctx.fillStyle = '#F5C842';
-    ctx.font = 'bold 46px Syne, Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText(lesson.title, W/2, 120);
-
-    // Gold line separator
-    ctx.beginPath();
-    ctx.moveTo(W/2 - 220, 148); ctx.lineTo(W/2 + 220, 148);
-    const lineGrad = ctx.createLinearGradient(W/2-220, 0, W/2+220, 0);
-    lineGrad.addColorStop(0, 'transparent');
-    lineGrad.addColorStop(0.5, 'rgba(245,200,66,0.7)');
-    lineGrad.addColorStop(1, 'transparent');
-    ctx.strokeStyle = lineGrad; ctx.lineWidth = 2; ctx.stroke();
-
-    // Body text
-    ctx.fillStyle = '#CBD5E8';
-    ctx.font = '30px "DM Sans", Arial';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-
-    const words = lesson.text.split(' ');
-    let line = '', y = 178, maxW = 920, lineH = 46;
-    for (let n = 0; n < words.length; n++) {
-        const testLine = line + words[n] + ' ';
-        if (ctx.measureText(testLine).width > maxW && n > 0) {
-            ctx.fillText(line.trim(), 52, y); line = words[n] + ' '; y += lineH;
-        } else line = testLine;
-    }
-    ctx.fillText(line.trim(), 52, y);
-
-    // Music icon decoration
-    ctx.fillStyle = 'rgba(245,200,66,0.08)';
-    ctx.font = '120px Arial';
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'bottom';
-    ctx.fillText('🎵', W - 36, H - 36);
-
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.generateMipmaps = false;
-    tex.minFilter = THREE.LinearFilter;
-    tex.magFilter = THREE.LinearFilter;
-    return tex;
-}
-
-// ─── WORLD BUILDING ───────────────────────────────────────────────────────────
-function buildWorld() {
-    // Ground
-    const groundGeo = new THREE.PlaneGeometry(CITY, CITY);
-    const groundMat = new THREE.MeshLambertMaterial({ color: 0x0d1a12 });
-    const floor = new THREE.Mesh(groundGeo, groundMat);
-    floor.rotation.x = -Math.PI / 2;
-    floor.receiveShadow = true;
-    scene.add(floor);
-
-    // Grid lines on ground for city feel
-    const gridHelper = new THREE.GridHelper(CITY, 40, 0x1a2e1a, 0x1a2e1a);
-    gridHelper.position.y = 0.06;
-    scene.add(gridHelper);
-
-    const half = CITY / 2;
-    let lessonIndex = 0;
-
-    for (let x = -half; x < half; x += BLOCK) {
-        for (let z = -half; z < half; z += BLOCK) {
-            createRoad(x, z, BLOCK, ROAD);
-            const bx = x + ROAD/2, bz = z + ROAD/2, bArea = BLOCK - ROAD;
-            if (Math.abs(x) < 55 && Math.abs(z) < 55) continue;
-
-            if (lessonIndex < lessons.length && Math.random() > 0.3) {
-                createEducationalBlock(bx, bz, bArea, lessons[lessonIndex]);
-                lessonIndex++;
-            } else if (Math.random() > 0.25) {
-                createCityBlock(bx, bz, bArea);
+            for (let coordinate = -half; coordinate < half; coordinate += blockSize) {
+                coords.push(coordinate);
             }
+
+            return coords;
         }
-    }
 
-    while (lessonIndex < lessons.length) {
-        const rx = (Math.random()*(CITY-120)) - (CITY/2-60);
-        const rz = (Math.random()*(CITY-120)) - (CITY/2-60);
-        if (Math.abs(rx) > 70 && Math.abs(rz) > 70) {
-            createEducationalBlock(rx, rz, BLOCK-ROAD, lessons[lessonIndex]);
-            lessonIndex++;
+        function nearestRoadCoordinate(value) {
+            const coords = getRoadCoordinates();
+            let nearest = coords[0];
+            let shortestDistance = Math.abs(value - nearest);
+
+            for (const coordinate of coords) {
+                const distance = Math.abs(value - coordinate);
+                if (distance < shortestDistance) {
+                    shortestDistance = distance;
+                    nearest = coordinate;
+                }
+            }
+
+            return nearest;
         }
-    }
 
-    // Spawn area feature — decorative plaza
-    createPlaza();
-
-    // Cars
-    for (let i = 0; i < 50; i++) spawnCar(half);
-
-    // Stars
-    createStars();
-}
-
-function createPlaza() {
-    const pMat = new THREE.MeshLambertMaterial({ color: 0x1a2035 });
-    const plaza = new THREE.Mesh(new THREE.PlaneGeometry(50, 50), pMat);
-    plaza.rotation.x = -Math.PI/2;
-    plaza.position.set(0, 0.08, 0);
-    scene.add(plaza);
-
-    // Central obelisk
-    const obMat = new THREE.MeshStandardMaterial({ color: 0xf5c842, metalness: 0.6, roughness: 0.3 });
-    const obelisk = new THREE.Mesh(new THREE.BoxGeometry(3, 22, 3), obMat);
-    obelisk.position.set(0, 11, 0);
-    obelisk.castShadow = true;
-    scene.add(obelisk);
-    const tip = new THREE.Mesh(new THREE.ConeGeometry(2.2, 5, 4), obMat);
-    tip.position.set(0, 24, 0);
-    scene.add(tip);
-
-    // Point light on obelisk
-    const oLight = new THREE.PointLight(0xf5c842, 2, 60);
-    oLight.position.set(0, 20, 0);
-    scene.add(oLight);
-}
-
-function createStars() {
-    const starGeo = new THREE.BufferGeometry();
-    const positions = [];
-    for (let i = 0; i < 2000; i++) {
-        positions.push(
-            (Math.random()-0.5)*1500,
-            80 + Math.random()*200,
-            (Math.random()-0.5)*1500
-        );
-    }
-    starGeo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-    const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.5, sizeAttenuation: true });
-    scene.add(new THREE.Points(starGeo, starMat));
-}
-
-function createRoad(x, z, size, rW) {
-    const roadMat = new THREE.MeshLambertMaterial({ color: 0x111820 });
-    const hRoad = new THREE.Mesh(new THREE.PlaneGeometry(size, rW), roadMat);
-    hRoad.rotation.x = -Math.PI/2;
-    hRoad.position.set(x+size/2, 0.05, z);
-    hRoad.receiveShadow = true;
-    scene.add(hRoad);
-
-    const vRoad = new THREE.Mesh(new THREE.PlaneGeometry(rW, size), roadMat);
-    vRoad.rotation.x = -Math.PI/2;
-    vRoad.position.set(x, 0.05, z+size/2);
-    vRoad.receiveShadow = true;
-    scene.add(vRoad);
-
-    // Center lane marking
-    const markMat = new THREE.MeshLambertMaterial({ color: 0xf5c842, opacity: 0.4, transparent: true });
-    const hMark = new THREE.Mesh(new THREE.PlaneGeometry(size*0.8, 0.5), markMat);
-    hMark.rotation.x = -Math.PI/2;
-    hMark.position.set(x+size/2, 0.07, z);
-    scene.add(hMark);
-}
-
-function createEducationalBlock(sx, sz, bArea, lesson) {
-    const group = new THREE.Group();
-    const w = 28, h = 20, d = 16;
-
-    // Building base
-    const bMat = new THREE.MeshLambertMaterial({ color: 0x1e2d40 });
-    const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), bMat);
-    body.position.y = h/2; body.castShadow = true; body.receiveShadow = true;
-    group.add(body);
-
-    // Gold trim band
-    const trimMat = new THREE.MeshStandardMaterial({ color: 0xf5c842, metalness: 0.7, roughness: 0.2 });
-    const trim = new THREE.Mesh(new THREE.BoxGeometry(w+0.4, 1.2, d+0.4), trimMat);
-    trim.position.y = h + 0.6; group.add(trim);
-
-    // Rooftop
-    const roofMat = new THREE.MeshLambertMaterial({ color: 0x0d1624 });
-    const roof = new THREE.Mesh(new THREE.BoxGeometry(w+1, 0.8, d+1), roofMat);
-    roof.position.y = h + 1.6; group.add(roof);
-
-    // Small rooftop tower
-    const tower = new THREE.Mesh(new THREE.BoxGeometry(4, 4, 4), trimMat);
-    tower.position.set(0, h + 3.6, 0); group.add(tower);
-
-    // Glow light on building
-    const bLight = new THREE.PointLight(0xf5c842, 0.8, 25);
-    bLight.position.set(0, h, d/2 + 5); group.add(bLight);
-
-    // Window rows
-    const winMat = new THREE.MeshBasicMaterial({ color: 0xffe082 });
-    for (let row = 0; row < 3; row++) {
-        for (let col = -2; col <= 2; col++) {
-            const win = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 2), winMat);
-            win.position.set(col * 5, 5 + row * 5.5, d/2 + 0.11);
-            group.add(win);
+        function randomRoadCoordinate() {
+            const coords = getRoadCoordinates();
+            return coords[Math.floor(Math.random() * coords.length)];
         }
-    }
 
-    // Mural panel
-    const panelTex = createTextTexture(lesson);
-    const panelMat = new THREE.MeshBasicMaterial({ map: panelTex });
-    const panelW = 26, panelH = 19.5;
-    const panel = new THREE.Mesh(new THREE.PlaneGeometry(panelW, panelH), panelMat);
-    panel.position.set(0, h/2, d/2 + 0.15);
-    panel.userData = { title: lesson.title, fullText: lesson.text, num: lesson.num };
-    group.add(panel);
-    interactablePanels.push(panel);
+        function isSafelyOnGrass(x, z, objectRadius = 4.2) {
+            const roadSafetyMargin = roadWidth / 2 + objectRadius;
+            const distanceToVerticalRoad = Math.abs(x - nearestRoadCoordinate(x));
+            const distanceToHorizontalRoad = Math.abs(z - nearestRoadCoordinate(z));
 
-    // Coin
-    const coinGroup = new THREE.Group();
-    const coinGeo = new THREE.CylinderGeometry(1.8, 1.8, 0.45, 32);
-    const coinMat = new THREE.MeshStandardMaterial({ color: 0xf5c842, metalness: 0.9, roughness: 0.15 });
-    const coin = new THREE.Mesh(coinGeo, coinMat);
-    coin.rotation.x = Math.PI/2;
-    coin.castShadow = true;
-    coinGroup.add(coin);
+            if (distanceToVerticalRoad < roadSafetyMargin) return false;
+            if (distanceToHorizontalRoad < roadSafetyMargin) return false;
+            if (Math.abs(x) < 45 && Math.abs(z) < 45) return false;
 
-    // Coin inner ring
-    const innerGeo = new THREE.TorusGeometry(1.2, 0.12, 8, 32);
-    const inner = new THREE.Mesh(innerGeo, new THREE.MeshStandardMaterial({ color: 0xb8962e, metalness: 0.9, roughness: 0.2 }));
-    coinGroup.add(inner);
+            return true;
+        }
 
-    // Coin glow
-    const coinLight = new THREE.PointLight(0xf5c842, 1.2, 12);
-    coinGroup.add(coinLight);
+        function isFarFromExistingBuildings(x, z, minDistance = 32) {
+            const point = new THREE.Vector3(x, 0, z);
+            for (const collider of colliders) {
+                const box = new THREE.Box3().setFromObject(collider.mesh);
+                const center = new THREE.Vector3();
+                box.getCenter(center);
+                center.y = 0;
+                if (point.distanceTo(center) < minDistance) return false;
+            }
+            return true;
+        }
 
-    coinGroup.position.set(0, 5, d/2 + 4);
-    coins.push(coinGroup);
-    group.add(coinGroup);
+        const audioElements = {
+            bgMusic: null,
+            coin: null,
+            carCrash: null,
+            victory: null
+        };
 
-    group.position.set(sx + bArea/2, 0, sz + bArea/2);
-    group.rotation.y = Math.floor(Math.random() * 4) * (Math.PI/2);
-    scene.add(group);
-}
+        const contents = [
+            "A criatividade não é um dom reservado a poucas pessoas; ela aparece quando o cérebro combina experiências antigas de um jeito novo. Isso acontece na arte, na ciência e também na música, quando um músico transforma um padrão simples em algo expressivo. Quanto mais repertório a pessoa acumula, mais material ela tem para criar conexões inesperadas.",
+            "Uma curiosidade sobre a criatividade é que muitas ideias parecem surgir do nada, mas na verdade costumam nascer de longos períodos de observação silenciosa. No estudo musical, isso significa que ouvir com atenção, repetir e experimentar são etapas invisíveis da invenção. O aluno que escuta mais do que apenas toca passa a descobrir possibilidades que antes pareciam escondidas.",
+            "Criar não é apenas inventar algo totalmente novo; muitas vezes é reorganizar o que já existe. Na música, isso acontece quando um ritmo conhecido ganha outra acentuação, um acorde comum recebe uma nova função ou uma melodia é ornamentada de forma pessoal. Essa visão ajuda o músico a perceber que a teoria não limita, mas amplia.",
+            "A improvisação é uma das formas mais claras de criatividade musical porque exige decisão rápida, escuta ativa e memória sonora. Quando o músico improvisa, ele treina a capacidade de responder ao presente sem perder a coerência musical. Isso também fortalece o aprendizado da técnica, da harmonia e do fraseado.",
+            "Há uma ligação forte entre criatividade e erro. Muitas descobertas criativas acontecem quando alguém faz algo “errado” e percebe que o resultado pode ser interessante. Na prática instrumental e vocal, aceitar o erro como parte do processo ajuda o estudante a tocar com mais liberdade e menos medo.",
+            "A criatividade cresce quando há diversidade de estímulos. Um músico que ouve estilos diferentes, lê, observa a natureza, conversa com pessoas variadas e experimenta novas sonoridades amplia sua capacidade de criar. A teoria musical se torna mais viva quando é conectada a experiências reais e não apenas a exercícios abstratos.",
+            "O silêncio também faz parte da criatividade. Em música, as pausas são tão importantes quanto as notas, e isso vale para o pensamento criativo: parar, refletir e respirar pode gerar soluções melhores do que insistir sem pausa. Muitas vezes uma ideia musical aparece depois de um intervalo de descanso mental.",
+            "A criatividade musical não depende apenas de inspiração, mas também de vocabulário. Quem conhece escalas, acordes, ritmos e formas musicais tem mais recursos para se expressar com clareza. Aprender teoria, portanto, não é decorar regras, e sim adquirir ferramentas para falar musicalmente com mais autonomia.",
+            "Um músico criativo costuma ouvir de maneira analítica e sensível ao mesmo tempo. Ele percebe timbre, textura, dinâmica, condução de vozes e função harmônica, mas também se deixa afetar pela emoção da música. Essa combinação de análise e sensibilidade fortalece tanto a interpretação quanto a composição.",
+            "Brincar é uma porta importante para a criatividade. Quando o estudante experimenta sem se preocupar imediatamente em acertar, ele descobre possibilidades que o ensino formal às vezes esconde. Na voz e nos instrumentos, brincar com ritmo, altura, articulação e timbre pode abrir caminhos muito ricos.",
+            "A repetição não é inimiga da criatividade; ela pode ser a base dela. Ao repetir um exercício, o músico começa a notar pequenas variações e a perceber novas camadas de sentido. A partir dessa repetição consciente, surgem interpretações pessoais mais profundas e invenções mais maduras.",
+            "Existe um poder criativo na escuta de si mesmo. Gravando a própria voz ou o próprio instrumento, o músico ganha um espelho sonoro que revela detalhes invisíveis no momento da execução. Essa autoescuta ajuda na correção técnica, na expressão e na formação de uma identidade musical mais consistente.",
+            "A criatividade em música muitas vezes nasce do encontro entre ordem e liberdade. A teoria oferece estrutura, enquanto a imaginação oferece movimento. Quando o músico aprende a navegar entre essas duas forças, ele toca com mais consciência e cria com mais segurança.",
+            "Uma das grandes curiosidades da criatividade é que ela melhora quando a pessoa faz perguntas melhores. Em vez de perguntar apenas “como tocar certo?”, o músico pode perguntar “que sentimento quero transmitir?”, “que cor sonora combina aqui?” ou “que outra solução harmônica poderia existir?”. Perguntas assim expandem o processo de aprendizado.",
+            "O corpo influencia a criatividade musical. Postura, respiração, coordenação e relaxamento afetam diretamente a maneira como o som sai e como a mente organiza ideias. Por isso, estudar música com atenção corporal costuma tornar a execução mais livre e a imaginação mais ativa.",
+            "A criatividade também tem relação com a memória. Quando o músico memoriza melodias, progressões e padrões rítmicos, ele passa a manipular esses elementos com mais facilidade. Essa memória não serve só para decorar repertório; ela cria uma base para improvisar, compor e interpretar com mais personalidade.",
+            "Muitos músicos criativos aprendem muito observando limites. Um conjunto pequeno de notas, uma voz com alcance específico ou um instrumento com certa timbragem podem estimular soluções originais. Os limites, longe de impedir a arte, podem funcionar como estímulo para a invenção musical.",
+            "Uma curiosidade interessante é que a criatividade costuma aparecer em ambientes onde é permitido experimentar sem punição imediata. No ensino musical, isso significa que o aluno precisa de espaço para tentar, errar, ouvir e tentar de novo. Quanto mais seguro ele se sente, mais ele se arrisca a criar.",
+            "A relação entre teoria musical e criatividade é mais íntima do que muitos imaginam. A teoria não existe apenas para explicar o que já foi feito; ela também ajuda a prever possibilidades e a abrir caminhos para novas escolhas. Entender função harmônica, contraponto e forma pode enriquecer a improvisação e a composição.",
+            "Na criatividade musical, a imitação pode ser um passo importante antes da originalidade. O aluno que estuda grandes intérpretes e compositores aprende estratégias, vocabulário e estilo. Depois, com maturidade, ele começa a transformar essa herança em uma voz própria.",
+            "Um músico mais criativo geralmente cultiva curiosidade diária. Ele pergunta por que uma passagem soa de certo modo, como um timbre muda a emoção da peça e o que aconteceria se uma frase fosse reorganizada. Essa atitude investigativa transforma o estudo em descoberta.",
+            "A criatividade cresce quando a pessoa consegue mudar de perspectiva. Em música, isso pode significar ouvir uma peça como ouvinte, como intérprete, como arranjador e como compositor. Cada ponto de vista revela detalhes diferentes e fortalece a compreensão global do fazer musical.",
+            "O treinamento musical pode aumentar a criatividade porque melhora a atenção e a percepção de padrões. Quanto mais o estudante reconhece estruturas, mais ele consegue quebrá-las de maneira consciente. A liberdade criativa, nesse sentido, nasce do conhecimento e não da ignorância.",
+            "Há criatividade quando o músico transforma emoção em forma. Sentir muito não basta; é preciso organizar esse sentimento em ritmo, melodia, harmonia, fraseado e dinâmica. Esse processo é essencial tanto para quem canta quanto para quem toca qualquer instrumento.",
+            "O aprendizado musical também é criativo quando envolve exploração tímbrica. Mudar a intensidade, a articulação, o ataque, o vibrato ou a maneira de tocar uma frase pode gerar interpretações muito diferentes. Pequenas escolhas sonoras tornam o estudo mais vivo e expressivo.",
+            "A criatividade é fortalecida pelo repertório, mas não se resume a copiar referências. Um músico que conhece estilos, épocas e linguagens amplia seu universo de possibilidades e, com o tempo, combina essas referências de maneira pessoal. A originalidade costuma surgir do diálogo entre influências e experiência própria.",
+            "A improvisação vocal é uma excelente forma de desenvolver criatividade porque une escuta, memória e resposta corporal imediata. Ao experimentar sílabas, intervalos, melismas e ritmos, o cantor percebe a voz como instrumento de invenção. Isso melhora inclusive a afinação e a consciência musical.",
+            "A criatividade na teoria musical aparece quando o estudante entende padrões e começa a combiná-los com intenção. Em vez de apenas nomear acordes ou intervalos, ele passa a usá-los como ferramentas de expressão. A teoria, assim, deixa de ser um fim em si mesma e se torna um meio para criar.",
+            "Outro aspecto curioso é que a criatividade se alimenta de hábitos. Reservar momentos regulares para ouvir, tocar, escrever, improvisar e analisar música cria uma disciplina fértil. A inspiração costuma encontrar mais facilmente quem já está em movimento.",
+            "No fundo, criatividade é a capacidade de continuar aprendendo sem perder a capacidade de surpreender. Na música, isso significa estudar técnica, teoria e repertório, mas sempre deixando espaço para a descoberta pessoal. O músico criativo não apenas executa o que já existe: ele participa da criação viva do som."
+        ];
 
-function createCityBlock(sx, sz, bArea) {
-    const count = 1 + Math.floor(Math.random() * 3);
-    const palettes = [
-        [0x1a2540, 0x1f2d4c, 0x243358],
-        [0x251a30, 0x2d2040, 0x341e4a],
-        [0x1a2e20, 0x1f3a28, 0x224030],
-    ];
-    const palette = palettes[Math.floor(Math.random() * palettes.length)];
+        const lessons = contents.map((text, index) => {
+            const colors = ["#fff7ad", "#bbf7d0", "#bfdbfe", "#fed7aa", "#e9d5ff", "#fecdd3", "#a7f3d0"];
+            return { title: `Mural ${index + 1}: Arte e Criatividade`, text: text, color: colors[index % colors.length] };
+        });
 
-    for (let i = 0; i < count; i++) {
-        const w = 8 + Math.random()*10;
-        const d = 8 + Math.random()*10;
-        const h = 12 + Math.random()*30;
-        const px = sx + bArea/2 + (Math.random()*12-6);
-        const pz = sz + bArea/2 + (Math.random()*12-6);
+        const isTouchDevice = ("ontouchstart" in window) || (navigator.maxTouchPoints > 0);
 
-        const mat = new THREE.MeshLambertMaterial({ color: palette[i % palette.length] });
-        const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
-        body.position.set(px, h/2, pz);
-        body.castShadow = true; body.receiveShadow = true;
-        scene.add(body);
+        window.onload = function () {
+            audioElements.bgMusic = document.getElementById("bgMusic");
+            audioElements.coin = document.getElementById("coinAudio");
+            audioElements.carCrash = document.getElementById("carCrashAudio");
+            audioElements.victory = document.getElementById("victoryAudio");
 
-        // Random windows
-        if (Math.random() > 0.4) {
-            const winMat = new THREE.MeshBasicMaterial({
-                color: Math.random() > 0.3 ? 0xffe082 : 0x88bbff,
-                transparent: true, opacity: 0.8
+            init();
+            animate();
+
+            document.getElementById("startMsg").classList.remove("loading");
+            document.getElementById("startMsg").innerHTML = isTouchDevice
+                ? "Use o joystick para andar, deslize à direita para olhar e toque em Pular. O pulo também mostra as moedas de longe."
+                : "Use WASD para andar, as setas para olhar e espaço para subir e visualizar as moedas. O mouse fica livre para clicar nos botões.";
+            document.getElementById("startBtn").style.display = "inline-block";
+            document.getElementById("startBtn").addEventListener("click", startGame);
+            document.getElementById("playerNameInput").addEventListener("keydown", (event) => {
+                if (event.key === "Enter") startGame();
             });
-            for (let r = 0; r < Math.floor(h/5); r++) {
-                const win = new THREE.Mesh(new THREE.PlaneGeometry(w*0.4, 1.4), winMat);
-                win.position.set(px, 3 + r*5, pz + d/2 + 0.05);
-                scene.add(win);
+            document.getElementById("musicToggle").addEventListener("click", toggleBackgroundMusic);
+        };
+
+        function startGame() {
+            const nameInput = document.getElementById("playerNameInput");
+            playerName = sanitizeText(nameInput.value.trim());
+
+            if (!playerName) {
+                document.getElementById("nameWarning").style.display = "block";
+                nameInput.focus();
+                return;
+            }
+
+            unlockAudio();
+            document.getElementById("nameWarning").style.display = "none";
+            document.getElementById("startScreen").style.display = "none";
+            document.getElementById("crosshair").style.display = "block";
+            document.getElementById("hud").style.display = "block";
+            document.getElementById("nameBadge").style.display = "block";
+            document.getElementById("musicToggle").style.display = "block";
+            document.getElementById("playerBadgeName").textContent = playerName;
+            gameStartedTime = performance.now();
+
+            if (isTouchDevice) {
+                document.getElementById("touchControls").style.display = "block";
+                setupTouchControls();
+            } else {
+                isLocked = true;
+            }
+
+            audioElements.bgMusic.volume = 0.18;
+            audioElements.bgMusic.play().catch(() => {});
+            if (synth.getVoices().length === 0) synth.speak(new SpeechSynthesisUtterance(""));
+        }
+
+        function sanitizeText(value) {
+            const div = document.createElement("div");
+            div.textContent = value;
+            return div.textContent;
+        }
+
+        function unlockAudio() {
+            Object.values(audioElements).forEach(audio => {
+                if (!audio) return;
+                audio.load();
+            });
+        }
+
+        function toggleBackgroundMusic() {
+            musicEnabled = !musicEnabled;
+            const button = document.getElementById("musicToggle");
+
+            if (musicEnabled) {
+                audioElements.bgMusic.volume = 0.18;
+                audioElements.bgMusic.play().catch(() => {});
+                button.textContent = "🔊 Música: ligada";
+            } else {
+                audioElements.bgMusic.pause();
+                button.textContent = "🔇 Música: desligada";
             }
         }
 
-        // Rooftop antenna sometimes
-        if (Math.random() > 0.6) {
-            const ant = new THREE.Mesh(
-                new THREE.CylinderGeometry(0.1, 0.1, 5, 6),
-                new THREE.MeshLambertMaterial({ color: 0x445566 })
+        function playAudio(audio, volume = 0.8) {
+            if (!audio) return;
+            try {
+                const clone = audio.cloneNode(true);
+                clone.volume = volume;
+                clone.play().catch(() => {});
+            } catch (error) {}
+        }
+
+        function activateCoinGuideJump() {
+            velocity.y = guideJumpStrength;
+            canJump = false;
+            coinGuideUntil = performance.now() + guideDurationMs;
+        }
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x7dd3fc);
+            scene.fog = new THREE.FogExp2(0x93c5fd, 0.0022);
+
+            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, playerEyeHeight, 0);
+
+            scene.add(new THREE.AmbientLight(0xffffff, 0.68));
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+            dirLight.position.set(100, 200, 50);
+            dirLight.castShadow = true;
+            dirLight.shadow.mapSize.width = 2048;
+            dirLight.shadow.mapSize.height = 2048;
+            dirLight.shadow.camera.near = 0.5;
+            dirLight.shadow.camera.far = 1000;
+            dirLight.shadow.camera.left = -400;
+            dirLight.shadow.camera.right = 400;
+            dirLight.shadow.camera.top = 400;
+            dirLight.shadow.camera.bottom = -400;
+            scene.add(dirLight);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            document.body.appendChild(renderer.domElement);
+
+            window.addEventListener("resize", onWindowResize);
+            setupDesktopControls();
+            buildWorld();
+        }
+
+        function createTextTexture(lesson) {
+            const canvas = document.createElement("canvas");
+            canvas.width = 1024;
+            canvas.height = 768;
+            const context = canvas.getContext("2d");
+
+            context.fillStyle = lesson.color;
+            context.fillRect(0, 0, canvas.width, canvas.height);
+
+            const gradient = context.createLinearGradient(0, 0, canvas.width, 0);
+            gradient.addColorStop(0, "#fb7185");
+            gradient.addColorStop(0.35, "#fbbf24");
+            gradient.addColorStop(0.7, "#34d399");
+            gradient.addColorStop(1, "#60a5fa");
+            context.strokeStyle = gradient;
+            context.lineWidth = 18;
+            context.strokeRect(12, 12, canvas.width - 24, canvas.height - 24);
+
+            context.fillStyle = "#111827";
+            context.font = "bold 45px 'Segoe UI', Arial";
+            context.textAlign = "center";
+            context.fillText(lesson.title, canvas.width / 2, 74);
+
+            context.beginPath();
+            context.moveTo(canvas.width / 2 - 315, 104);
+            context.lineTo(canvas.width / 2 + 315, 104);
+            context.lineWidth = 5;
+            context.strokeStyle = "#f59e0b";
+            context.stroke();
+
+            context.font = "33px 'Segoe UI', Arial";
+            context.textAlign = "left";
+            context.textBaseline = "top";
+            context.fillStyle = "#111827";
+
+            const words = lesson.text.split(" ");
+            let line = "";
+            let y = 142;
+
+            for (let n = 0; n < words.length; n++) {
+                const testLine = line + words[n] + " ";
+                if (context.measureText(testLine).width > 900 && n > 0) {
+                    context.fillText(line, 60, y);
+                    line = words[n] + " ";
+                    y += 45;
+                } else {
+                    line = testLine;
+                }
+            }
+            context.fillText(line, 60, y);
+
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.generateMipmaps = false;
+            texture.minFilter = THREE.LinearFilter;
+            texture.magFilter = THREE.LinearFilter;
+            return texture;
+        }
+
+        function addCollider(mesh, extraPadding = 0) {
+            colliders.push({ mesh, extraPadding });
+        }
+
+        function buildWorld() {
+            const floorMat = new THREE.MeshLambertMaterial({ color: 0x57c785 });
+            const floor = new THREE.Mesh(new THREE.PlaneGeometry(citySize, citySize), floorMat);
+            floor.rotation.x = -Math.PI / 2;
+            floor.receiveShadow = true;
+            scene.add(floor);
+
+            const half = citySize / 2;
+            let lessonIndex = 0;
+
+            createDecorations();
+
+            for (let x = -half; x < half; x += blockSize) {
+                for (let z = -half; z < half; z += blockSize) {
+                    createRoad(x, z, blockSize, roadWidth);
+
+                    const bx = x + roadWidth / 2;
+                    const bz = z + roadWidth / 2;
+                    const bArea = blockSize - roadWidth;
+                    if (Math.abs(x) < 50 && Math.abs(z) < 50) continue;
+
+                    if (lessonIndex < lessons.length && Math.random() > 0.35) {
+                        createEducationalHouseWithCoin(bx, bz, bArea, lessons[lessonIndex]);
+                        lessonIndex++;
+                    } else if (Math.random() > 0.3) {
+                        createNormalHouses(bx, bz, bArea);
+                    }
+                }
+            }
+
+            let placementAttempts = 0;
+            while (lessonIndex < lessons.length && placementAttempts < 4000) {
+                placementAttempts++;
+                const rx = (Math.random() * (citySize - 120)) - (citySize / 2) + 60;
+                const rz = (Math.random() * (citySize - 120)) - (citySize / 2) + 60;
+
+                if (
+                    Math.abs(rx) > 70 &&
+                    Math.abs(rz) > 70 &&
+                    isSafelyOnGrass(rx, rz, 16) &&
+                    isFarFromExistingBuildings(rx, rz, 34)
+                ) {
+                    createEducationalHouseWithCoin(rx - (blockSize - roadWidth) / 2, rz - (blockSize - roadWidth) / 2, blockSize - roadWidth, lessons[lessonIndex]);
+                    lessonIndex++;
+                }
+            }
+
+            for (let i = 0; i < 30; i++) spawnCar(half);
+        }
+
+        function createDecorations() {
+            for (let i = 0; i < 150; i++) {
+                const tree = new THREE.Group();
+                const trunk = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.7, 0.9, 5, 8),
+                    new THREE.MeshLambertMaterial({ color: 0x8b5a2b })
+                );
+                trunk.position.y = 2.5;
+                tree.add(trunk);
+
+                const top = new THREE.Mesh(
+                    new THREE.SphereGeometry(3.2, 16, 16),
+                    new THREE.MeshLambertMaterial({ color: [0x22c55e, 0x16a34a, 0x84cc16][Math.floor(Math.random() * 3)] })
+                );
+                top.position.y = 7;
+                top.castShadow = true;
+                tree.add(top);
+
+                const x = Math.random() * citySize - citySize / 2;
+                const z = Math.random() * citySize - citySize / 2;
+
+                // Árvores apenas na grama: deixa margem para tronco e copa não invadirem o asfalto.
+                if (!isSafelyOnGrass(x, z, 7.0)) continue;
+
+                tree.position.set(x, 0, z);
+                scene.add(tree);
+                addCollider(trunk, 1.8);
+            }
+        }
+
+        function createRoad(x, z, size, rWidth) {
+            const roadMat = new THREE.MeshLambertMaterial({ color: 0x374151 });
+            const lineMat = new THREE.MeshBasicMaterial({ color: 0xfde047 });
+
+            const hRoad = new THREE.Mesh(new THREE.PlaneGeometry(size, rWidth), roadMat);
+            hRoad.rotation.x = -Math.PI / 2;
+            hRoad.position.set(x + size / 2, 0.05, z);
+            hRoad.receiveShadow = true;
+            scene.add(hRoad);
+
+            const vRoad = new THREE.Mesh(new THREE.PlaneGeometry(rWidth, size), roadMat);
+            vRoad.rotation.x = -Math.PI / 2;
+            vRoad.position.set(x, 0.05, z + size / 2);
+            vRoad.receiveShadow = true;
+            scene.add(vRoad);
+
+            const hLine = new THREE.Mesh(new THREE.PlaneGeometry(size, 0.35), lineMat);
+            hLine.rotation.x = -Math.PI / 2;
+            hLine.position.set(x + size / 2, 0.07, z);
+            scene.add(hLine);
+
+            const vLine = new THREE.Mesh(new THREE.PlaneGeometry(0.35, size), lineMat);
+            vLine.rotation.x = -Math.PI / 2;
+            vLine.position.set(x, 0.07, z + size / 2);
+            scene.add(vLine);
+        }
+
+        function createEducationalHouseWithCoin(startX, startZ, size, lesson) {
+            const group = new THREE.Group();
+            const w = 26, h = 18, d = 14;
+
+            const houseMat = new THREE.MeshLambertMaterial({ color: [0xfef3c7, 0xdbeafe, 0xfce7f3, 0xdcfce7][Math.floor(Math.random() * 4)] });
+            const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), houseMat);
+            body.position.y = h / 2;
+            body.castShadow = true;
+            body.receiveShadow = true;
+            group.add(body);
+
+            const roofMat = new THREE.MeshLambertMaterial({ color: [0x7c3aed, 0xea580c, 0x2563eb, 0xbe123c][Math.floor(Math.random() * 4)] });
+            const roof = new THREE.Mesh(new THREE.ConeGeometry(18, 8, 4), roofMat);
+            roof.position.y = h + 4;
+            roof.rotation.y = Math.PI / 4;
+            roof.castShadow = true;
+            group.add(roof);
+
+            const panelTex = createTextTexture(lesson);
+            const panelMat = new THREE.MeshBasicMaterial({ map: panelTex });
+            const panel = new THREE.Mesh(new THREE.PlaneGeometry(24, 18), panelMat);
+            panel.position.set(0, h / 2, (d / 2) + 0.12);
+            panel.userData = { title: lesson.title, fullText: lesson.text };
+            group.add(panel);
+            interactablePanels.push(panel);
+
+            const coinGeo = new THREE.CylinderGeometry(2.1, 2.1, 0.48, 32);
+            const coinMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8, roughness: 0.18, emissive: 0x6b4e00 });
+            const coin = new THREE.Mesh(coinGeo, coinMat);
+            coin.rotation.x = Math.PI / 2;
+            coin.position.set(0, 4.4, (d / 2) + 5.2);
+            coin.castShadow = true;
+
+            const coinGlow = new THREE.Mesh(
+                new THREE.SphereGeometry(3.0, 24, 16),
+                new THREE.MeshBasicMaterial({ color: 0xfff3a3, transparent: true, opacity: 0.22 })
             );
-            ant.position.set(px, h + 2.5, pz);
-            scene.add(ant);
+            coinGlow.position.copy(coin.position);
+            coinGlow.userData.isCoinGlow = true;
+
+            group.add(coinGlow);
+            group.add(coin);
+            coin.userData.glow = coinGlow;
+            coins.push(coin);
+
+            group.position.set(startX + size / 2, 0, startZ + size / 2);
+            group.rotation.y = Math.floor(Math.random() * 4) * (Math.PI / 2);
+            scene.add(group);
+            addCollider(body, 1.4);
         }
-    }
-}
 
-function spawnCar(limit) {
-    const g = new THREE.Group();
-    const carColors = [0xFF1744, 0x2979FF, 0x00E676, 0xFFEA00, 0xFF6D00, 0xE040FB, 0xFFFFFF];
-    const col = carColors[Math.floor(Math.random() * carColors.length)];
-    const mat = new THREE.MeshLambertMaterial({ color: col });
+        function createNormalHouses(startX, startZ, size) {
+            const numHouses = Math.random() > 0.72 ? 2 : 1;
+            for (let i = 0; i < numHouses; i++) {
+                const w = 8 + Math.random() * 6;
+                const d = 8 + Math.random() * 6;
+                const h = 10 + Math.random() * 15;
+                const slots = [
+                    [-size * 0.18, -size * 0.18],
+                    [ size * 0.18,  size * 0.18]
+                ];
+                const px = startX + (size / 2) + slots[i][0];
+                const pz = startZ + (size / 2) + slots[i][1];
+                const group = new THREE.Group();
+                const colors = [0xfef08a, 0xfca5a5, 0x93c5fd, 0xc4b5fd, 0x86efac, 0xf9a8d4, 0xfdba74];
+                const mat = new THREE.MeshLambertMaterial({ color: colors[Math.floor(Math.random() * colors.length)] });
 
-    const body = new THREE.Mesh(new THREE.BoxGeometry(4, 1.4, 8), mat);
-    body.position.y = 1.4; body.castShadow = true; g.add(body);
+                const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+                body.position.y = h / 2;
+                body.castShadow = true;
+                body.receiveShadow = true;
+                group.add(body);
 
-    const top = new THREE.Mesh(new THREE.BoxGeometry(3.2, 1.1, 4.5),
-        new THREE.MeshLambertMaterial({ color: col }));
-    top.position.set(0, 2.65, -0.3); g.add(top);
+                if (Math.random() > 0.5) {
+                    const roof = new THREE.Mesh(
+                        new THREE.ConeGeometry(Math.max(w, d) * 0.82, 5, 4),
+                        new THREE.MeshLambertMaterial({ color: [0x4e342e, 0x7f1d1d, 0x1e3a8a][Math.floor(Math.random() * 3)] })
+                    );
+                    roof.position.y = h + 2.5;
+                    roof.rotation.y = Math.PI / 4;
+                    roof.castShadow = true;
+                    group.add(roof);
+                }
 
-    const wMat = new THREE.MeshLambertMaterial({ color: 0x111111 });
-    [2.6, -2.6].forEach(z => {
-        const w = new THREE.Mesh(new THREE.CylinderGeometry(0.75, 0.75, 4.6, 12), wMat);
-        w.rotation.z = Math.PI/2; w.position.set(0, 0.75, z); g.add(w);
-    });
-
-    // Headlights
-    const headMat = new THREE.MeshBasicMaterial({ color: 0xffffcc });
-    [-1, 1].forEach(side => {
-        const h = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 0.5), headMat);
-        h.position.set(side*1.2, 1.5, 4.05); g.add(h);
-    });
-
-    const isX = Math.random() > 0.5;
-    const pos = Math.floor((Math.random()*CITY)/BLOCK)*BLOCK - CITY/2;
-    const dir = Math.random() > 0.5 ? 1 : -1;
-    if (isX) {
-        g.position.set(Math.random()*CITY-limit, 0, pos + dir*4);
-        g.rotation.y = dir===1 ? Math.PI/2 : -Math.PI/2;
-    } else {
-        g.position.set(pos - dir*4, 0, Math.random()*CITY-limit);
-        g.rotation.y = dir===1 ? 0 : Math.PI;
-    }
-
-    g.userData = { axis: isX?'x':'z', dir, speed: 0.18 + Math.random()*0.25 };
-    scene.add(g); cars.push(g);
-}
-
-// ─── INTERACTION ──────────────────────────────────────────────────────────────
-const raycaster = new THREE.Raycaster();
-const center = new THREE.Vector2(0, 0);
-
-let lessonFlashTimer = null;
-
-function checkInteractions() {
-    if (performance.now() - gameStartedTime < 2000) return;
-
-    // Panel look detection
-    raycaster.setFromCamera(center, camera);
-    const hits = raycaster.intersectObjects(interactablePanels);
-    const crosshair = document.getElementById('crosshair');
-    const readingPanel = document.getElementById('readingPanel');
-
-    if (hits.length > 0 && hits[0].distance < 28) {
-        const data = hits[0].object.userData;
-        crosshair.classList.add('active');
-
-        if (data.fullText !== lastSpokenText && !synth.speaking) {
-            speakText(data.fullText);
-            readingPanel.classList.add('visible');
-        }
-    } else {
-        crosshair.classList.remove('active');
-        readingPanel.classList.remove('visible');
-        if (!synth.speaking) lastSpokenText = "";
-    }
-
-    // Coin collection by proximity
-    const pPos = camera.position;
-    for (let i = coins.length-1; i >= 0; i--) {
-        const coinGroup = coins[i];
-        const cwp = new THREE.Vector3();
-        coinGroup.getWorldPosition(cwp);
-
-        if (pPos.distanceTo(cwp) < 5.5) {
-            playCoinSound();
-
-            // Find which lesson this coin belongs to
-            const coinIdx = i;
-
-            coinGroup.parent.remove(coinGroup);
-            coins.splice(i, 1);
-            coinsCollected++;
-
-            // Update HUD
-            document.getElementById('coinCount').textContent = coinsCollected;
-            document.getElementById('progressBar').style.width = (coinsCollected/30*100) + '%';
-
-            // +1 FX at screen center
-            const fx = document.createElement('div');
-            fx.className = 'coin-fx';
-            fx.textContent = '+1 🪙';
-            fx.style.left = '50%'; fx.style.top = '48%';
-            document.body.appendChild(fx);
-            setTimeout(() => fx.remove(), 900);
-
-            // Brief lesson flash
-            if (coinIdx < lessons.length) {
-                const l = lessons[Math.min(coinsCollected-1, lessons.length-1)];
-                showLessonFlash(l);
-            }
-
-            if (coinsCollected === 30) triggerVictory();
-        }
-    }
-
-    // Compass
-    const needle = document.getElementById('compassNeedle');
-    if (needle) {
-        const angle = euler.y;
-        needle.style.transform = `rotate(${angle}rad)`;
-    }
-}
-
-function showLessonFlash(lesson) {
-    const fl = document.getElementById('lessonFlash');
-    document.getElementById('lfNum').textContent = `LIÇÃO ${String(lesson.num).padStart(2,'0')} / 30`;
-    document.getElementById('lfTitle').textContent = lesson.title;
-    document.getElementById('lfText').textContent = lesson.text.substring(0, 100) + '...';
-    fl.classList.add('show');
-    if (lessonFlashTimer) clearTimeout(lessonFlashTimer);
-    lessonFlashTimer = setTimeout(() => fl.classList.remove('show'), 3500);
-}
-
-function triggerVictory() {
-    synth.cancel();
-    playVictorySound();
-    document.exitPointerLock?.();
-    document.getElementById('touchControls').style.display = 'none';
-    document.getElementById('hud').style.display = 'none';
-    document.getElementById('crosshair').style.display = 'none';
-    document.getElementById('readingPanel').style.display = 'none';
-    document.getElementById('victoryScreen').style.display = 'flex';
-}
-
-function speakText(text) {
-    synth.cancel(); lastSpokenText = text;
-    const utt = new SpeechSynthesisUtterance(text);
-    utt.lang = 'pt-BR'; utt.rate = 0.92; utt.pitch = 1.0;
-    const readingPanel = document.getElementById('readingPanel');
-    utt.onstart = () => readingPanel.classList.add('visible');
-    utt.onend = utt.onerror = () => readingPanel.classList.remove('visible');
-    synth.speak(utt);
-}
-
-// ─── CONTROLS ─────────────────────────────────────────────────────────────────
-function setupDesktopControls() {
-    document.addEventListener('pointerlockchange', () => {
-        isLocked = document.pointerLockElement === document.body;
-    });
-    document.addEventListener('mousemove', e => {
-        if (!isLocked) return;
-        euler.setFromQuaternion(camera.quaternion);
-        euler.y -= e.movementX * 0.0022;
-        euler.x -= e.movementY * 0.0022;
-        euler.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, euler.x));
-        camera.quaternion.setFromEuler(euler);
-    });
-    document.addEventListener('keydown', e => {
-        if (e.code==='KeyW'||e.code==='ArrowUp') moveForward=true;
-        if (e.code==='KeyA'||e.code==='ArrowLeft') moveLeft=true;
-        if (e.code==='KeyS'||e.code==='ArrowDown') moveBackward=true;
-        if (e.code==='KeyD'||e.code==='ArrowRight') moveRight=true;
-        if (e.code==='Space' && canJump) { velocity.y += 120; canJump = false; }
-        if (!isLocked) document.body.requestPointerLock();
-    });
-    document.addEventListener('keyup', e => {
-        if (e.code==='KeyW'||e.code==='ArrowUp') moveForward=false;
-        if (e.code==='KeyA'||e.code==='ArrowLeft') moveLeft=false;
-        if (e.code==='KeyS'||e.code==='ArrowDown') moveBackward=false;
-        if (e.code==='KeyD'||e.code==='ArrowRight') moveRight=false;
-    });
-}
-
-function setupTouchControls() {
-    const joyKnob = document.getElementById('joystickKnob');
-    const joyZone = document.getElementById('joystickZone');
-    let joyRect = joyZone.getBoundingClientRect();
-    const jCX = joyRect.left + joyRect.width/2;
-    const jCY = joyRect.top + joyRect.height/2;
-    let jT=null, cT=null, lCX=0, lCY=0;
-
-    document.addEventListener('touchstart', e => {
-        for (let t of e.changedTouches) {
-            if (t.target.id === 'jumpBtn') {
-                if (canJump) { velocity.y += 120; canJump = false; }
-            } else if (t.clientX < window.innerWidth/2 && !jT) {
-                jT = t.identifier; updateJoy(t.clientX, t.clientY);
-            } else if (t.clientX >= window.innerWidth/2 && !cT) {
-                cT = t.identifier; lCX = t.clientX; lCY = t.clientY;
+                group.position.set(px, 0, pz);
+                scene.add(group);
+                addCollider(body, 1.15);
             }
         }
-    }, {passive: false});
 
-    document.addEventListener('touchmove', e => {
-        for (let t of e.changedTouches) {
-            if (t.identifier === jT) updateJoy(t.clientX, t.clientY);
-            else if (t.identifier === cT) {
+        function spawnCar(limit) {
+            const carGroup = new THREE.Group();
+            const colors = [0xff1744, 0x2979ff, 0xffea00, 0xffffff, 0x212121, 0x00e676, 0xf97316, 0xec4899];
+            const mat = new THREE.MeshLambertMaterial({ color: colors[Math.floor(Math.random() * colors.length)] });
+
+            const body = new THREE.Mesh(new THREE.BoxGeometry(4, 1.5, 8), mat);
+            body.position.y = 1.5;
+            body.castShadow = true;
+            carGroup.add(body);
+
+            const top = new THREE.Mesh(new THREE.BoxGeometry(3.5, 1.2, 4), mat);
+            top.position.set(0, 2.8, -0.5);
+            top.castShadow = true;
+            carGroup.add(top);
+
+            const wMat = new THREE.MeshLambertMaterial({ color: 0x111111 });
+            const wGeo = new THREE.CylinderGeometry(0.8, 0.8, 4.2, 16);
+
+            const wF = new THREE.Mesh(wGeo, wMat);
+            wF.rotation.z = Math.PI / 2;
+            wF.position.set(0, 0.8, 2.5);
+            carGroup.add(wF);
+
+            const wB = new THREE.Mesh(wGeo, wMat);
+            wB.rotation.z = Math.PI / 2;
+            wB.position.set(0, 0.8, -2.5);
+            carGroup.add(wB);
+
+            const isX = Math.random() > 0.5;
+            const dir = Math.random() > 0.5 ? 1 : -1;
+            const halfCity = citySize / 2;
+
+            if (isX) {
+                const zRoad = randomRoadCoordinate();
+                carGroup.position.set((Math.random() * citySize) - halfCity, 0, zRoad);
+                carGroup.rotation.y = dir === 1 ? Math.PI / 2 : -Math.PI / 2;
+            } else {
+                const xRoad = randomRoadCoordinate();
+                carGroup.position.set(xRoad, 0, (Math.random() * citySize) - halfCity);
+                carGroup.rotation.y = dir === 1 ? 0 : Math.PI;
+            }
+
+            carGroup.userData = {
+                axis: isX ? "x" : "z",
+                dir: dir,
+                speed: 0.20 + Math.random() * 0.16,
+                fixedRoadCoordinate: isX ? carGroup.position.z : carGroup.position.x,
+                lastHit: 0
+            };
+
+            scene.add(carGroup);
+            cars.push(carGroup);
+        }
+
+        const raycaster = new THREE.Raycaster();
+        const centerScreen = new THREE.Vector2(0, 0);
+
+        function checkInteractions() {
+            if (performance.now() - gameStartedTime < 1200) return;
+
+            raycaster.setFromCamera(centerScreen, camera);
+            const intersects = raycaster.intersectObjects(interactablePanels);
+            const crosshair = document.getElementById("crosshair");
+
+            if (intersects.length > 0 && intersects[0].distance < 25) {
+                const textToSpeak = intersects[0].object.userData.fullText;
+                crosshair.style.background = "#f59e0b";
+                crosshair.style.transform = "translate(-50%, -50%) scale(1.8)";
+                crosshair.style.border = "2px solid white";
+
+                if (textToSpeak !== lastSpokenText && !synth.speaking) speakText(textToSpeak);
+            } else {
+                crosshair.style.background = "rgba(255,255,255,0.92)";
+                crosshair.style.transform = "translate(-50%, -50%) scale(1)";
+                crosshair.style.border = "none";
+                if (!synth.speaking) lastSpokenText = "";
+            }
+
+            const playerPos = camera.position;
+
+            // Coleta livre: qualquer moeda pode ser coletada por proximidade, sem depender da ordem dos murais.
+            for (let i = coins.length - 1; i >= 0; i--) {
+                const coin = coins[i];
+                const coinWorldPos = new THREE.Vector3();
+                coin.getWorldPosition(coinWorldPos);
+
+                if (playerPos.distanceTo(coinWorldPos) < coinCollectDistance) {
+                    playAudio(audioElements.coin, 0.95);
+                    if (coin.userData.glow) coin.parent.remove(coin.userData.glow);
+                    coin.parent.remove(coin);
+                    coins.splice(i, 1);
+                    coinsCollected++;
+                    document.getElementById("coinCount").innerText = coinsCollected;
+
+                    if (coinsCollected === 30) triggerVictory();
+                }
+            }
+
+            checkCarHits();
+        }
+
+        function triggerVictory() {
+            synth.cancel();
+            audioElements.bgMusic.pause();
+            playAudio(audioElements.victory, 1);
+            document.exitPointerLock?.();
+
+            victoryDateTime = new Date().toLocaleString("pt-BR", {
+                dateStyle: "full",
+                timeStyle: "medium"
+            });
+
+            document.getElementById("certificateName").textContent = playerName;
+            document.getElementById("certificateDate").textContent = `Concluído em ${victoryDateTime}`;
+            document.getElementById("touchControls").style.display = "none";
+            document.getElementById("hud").style.display = "none";
+            document.getElementById("nameBadge").style.display = "none";
+            document.getElementById("musicToggle").style.display = "none";
+            document.getElementById("crosshair").style.display = "none";
+            document.getElementById("victoryScreen").style.display = "flex";
+        }
+
+        function speakText(text) {
+            synth.cancel();
+            lastSpokenText = text;
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = "pt-BR";
+            utterance.rate = 0.95;
+
+            const indicator = document.getElementById("audioIndicator");
+            utterance.onstart = () => { indicator.style.display = "block"; };
+            utterance.onend = () => { indicator.style.display = "none"; };
+            utterance.onerror = () => { indicator.style.display = "none"; };
+            synth.speak(utterance);
+        }
+
+        function playCarCrashNow() {
+            const now = performance.now();
+
+            if (now - lastCarCrashSound > 650) {
+                playAudio(audioElements.carCrash, 1.0);
+                lastCarCrashSound = now;
+            }
+        }
+
+        function isPlayerCollidingAt(x, z) {
+            const playerBox = getPlayerBoxAt(x, z);
+
+            for (const collider of colliders) {
+                const box = new THREE.Box3().setFromObject(collider.mesh);
+                if (collider.extraPadding) {
+                    box.expandByScalar(collider.extraPadding);
+                }
+                if (box.intersectsBox(playerBox)) return true;
+            }
+            return false;
+        }
+
+        function getPlayerBoxAt(x, z) {
+            return new THREE.Box3(
+                new THREE.Vector3(x - playerRadius, 0.2, z - playerRadius),
+                new THREE.Vector3(x + playerRadius, playerEyeHeight + 3.0, z + playerRadius)
+            );
+        }
+
+        function isPlayerCollidingWithCarAt(x, z) {
+            const playerBox = getPlayerBoxAt(x, z);
+
+            for (const car of cars) {
+                const carBox = new THREE.Box3().setFromObject(car).expandByScalar(0.45);
+                if (carBox.intersectsBox(playerBox)) return true;
+            }
+
+            return false;
+        }
+
+        function tryMovePlayer(dx, dz) {
+            if (!dx && !dz) return;
+
+            let blocked = false;
+            let blockedByCar = false;
+
+            const nextX = camera.position.x + dx;
+            if (!isPlayerCollidingAt(nextX, camera.position.z) && !isPlayerCollidingWithCarAt(nextX, camera.position.z)) {
+                camera.position.x = nextX;
+            } else {
+                blocked = true;
+                blockedByCar = isPlayerCollidingWithCarAt(nextX, camera.position.z);
+                velocity.x = 0;
+            }
+
+            const nextZ = camera.position.z + dz;
+            if (!isPlayerCollidingAt(camera.position.x, nextZ) && !isPlayerCollidingWithCarAt(camera.position.x, nextZ)) {
+                camera.position.z = nextZ;
+            } else {
+                blocked = true;
+                blockedByCar = blockedByCar || isPlayerCollidingWithCarAt(camera.position.x, nextZ);
+                velocity.z = 0;
+            }
+
+            if (blockedByCar) playCarCrashNow();
+        }
+
+        function checkCarHits() {
+            const now = performance.now();
+            const playerBox = getPlayerBoxAt(camera.position.x, camera.position.z);
+
+            for (const car of cars) {
+                const carBox = new THREE.Box3().setFromObject(car).expandByScalar(1.2);
+                if (carBox.intersectsBox(playerBox) && now - lastCarCrashSound > 900) {
+                    playAudio(audioElements.carCrash, 1.0);
+                    lastCarCrashSound = now;
+
+                    const push = new THREE.Vector3(camera.position.x - car.position.x, 0, camera.position.z - car.position.z);
+                    if (push.lengthSq() < 0.001) push.set(Math.random() - 0.5, 0, Math.random() - 0.5);
+                    push.normalize().multiplyScalar(6.5);
+
+                    if (!isPlayerCollidingAt(camera.position.x + push.x, camera.position.z + push.z)) {
+                        camera.position.x += push.x;
+                        camera.position.z += push.z;
+                    }
+                    break;
+                }
+            }
+        }
+
+        function setupDesktopControls() {
+            document.addEventListener("keydown", (e) => {
+                if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Space"].includes(e.code)) {
+                    e.preventDefault();
+                }
+
+                if (e.code === "KeyW") moveForward = true;
+                if (e.code === "KeyA") moveLeft = true;
+                if (e.code === "KeyS") moveBackward = true;
+                if (e.code === "KeyD") moveRight = true;
+
+                if (e.code === "ArrowUp") lookUp = true;
+                if (e.code === "ArrowDown") lookDown = true;
+                if (e.code === "ArrowLeft") lookLeftArrow = true;
+                if (e.code === "ArrowRight") lookRightArrow = true;
+
+                if (e.code === "Space" && canJump) {
+                    activateCoinGuideJump();
+                }
+            });
+
+            document.addEventListener("keyup", (e) => {
+                if (e.code === "KeyW") moveForward = false;
+                if (e.code === "KeyA") moveLeft = false;
+                if (e.code === "KeyS") moveBackward = false;
+                if (e.code === "KeyD") moveRight = false;
+
+                if (e.code === "ArrowUp") lookUp = false;
+                if (e.code === "ArrowDown") lookDown = false;
+                if (e.code === "ArrowLeft") lookLeftArrow = false;
+                if (e.code === "ArrowRight") lookRightArrow = false;
+            });
+        }
+
+        function setupTouchControls() {
+            const joyKnob = document.getElementById("joystickKnob");
+            const joyRect = document.getElementById("joystickZone").getBoundingClientRect();
+            const jCX = joyRect.left + joyRect.width / 2;
+            const jCY = joyRect.top + joyRect.height / 2;
+            let jT = null, cT = null, lCX = 0, lCY = 0;
+
+            document.addEventListener("touchstart", (e) => {
+                for (const t of e.changedTouches) {
+                    if (t.target.id === "jumpBtn") {
+                        if (canJump) {
+                            activateCoinGuideJump();
+                        }
+                    } else if (t.clientX < window.innerWidth / 2 && !jT) {
+                        jT = t.identifier;
+                        updateJoy(t.clientX, t.clientY);
+                    } else if (t.clientX >= window.innerWidth / 2 && !cT && t.target.id !== "jumpBtn") {
+                        cT = t.identifier;
+                        lCX = t.clientX;
+                        lCY = t.clientY;
+                    }
+                }
+            }, { passive: false });
+
+            document.addEventListener("touchmove", (e) => {
+                for (const t of e.changedTouches) {
+                    if (t.identifier === jT) updateJoy(t.clientX, t.clientY);
+                    else if (t.identifier === cT) {
+                        euler.setFromQuaternion(camera.quaternion);
+                        euler.y -= (t.clientX - lCX) * 0.006;
+                        euler.x -= (t.clientY - lCY) * 0.006;
+                        euler.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, euler.x));
+                        camera.quaternion.setFromEuler(euler);
+                        lCX = t.clientX;
+                        lCY = t.clientY;
+                    }
+                }
+            }, { passive: false });
+
+            const resetJoy = () => {
+                joyKnob.style.transform = "translate(-50%, -50%)";
+                joyX = 0;
+                joyY = 0;
+                jT = null;
+            };
+
+            document.addEventListener("touchend", (e) => {
+                for (const t of e.changedTouches) {
+                    if (t.identifier === jT) resetJoy();
+                    if (t.identifier === cT) cT = null;
+                }
+            });
+
+            function updateJoy(x, y) {
+                let dx = x - jCX;
+                let dy = y - jCY;
+                const dist = Math.min(Math.sqrt(dx * dx + dy * dy), joyRect.width / 2);
+                const ang = Math.atan2(dy, dx);
+                const kX = Math.cos(ang) * dist;
+                const kY = Math.sin(ang) * dist;
+                joyKnob.style.transform = `translate(calc(-50% + ${kX}px), calc(-50% + ${kY}px))`;
+                joyX = kX / (joyRect.width / 2);
+                joyY = kY / (joyRect.width / 2);
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = performance.now();
+            const delta = Math.min((time - prevTime) / 1000, 0.1);
+
+            if (isLocked || isTouchDevice) {
+                if (!isTouchDevice) {
+                    const lookSpeed = 2.25;
+                    euler.setFromQuaternion(camera.quaternion);
+                    euler.y += (Number(lookLeftArrow) - Number(lookRightArrow)) * lookSpeed * delta;
+                    euler.x += (Number(lookUp) - Number(lookDown)) * lookSpeed * delta;
+                    euler.x = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, euler.x));
+                    camera.quaternion.setFromEuler(euler);
+                }
+
+                velocity.x -= velocity.x * 10.0 * delta;
+                velocity.z -= velocity.z * 10.0 * delta;
+                velocity.y -= 9.8 * 40.0 * delta;
+
+                const mX = Number(moveRight) - Number(moveLeft) + joyX;
+                const mZ = Number(moveBackward) - Number(moveForward) + joyY;
+                direction.set(mX, 0, mZ).normalize();
+
+                const speed = 160.0;
+                if (moveForward || moveBackward || Math.abs(joyY) > 0.1) velocity.z += direction.z * speed * delta;
+                if (moveLeft || moveRight || Math.abs(joyX) > 0.1) velocity.x += direction.x * speed * delta;
+
                 euler.setFromQuaternion(camera.quaternion);
-                euler.y -= (t.clientX-lCX) * 0.005;
-                euler.x -= (t.clientY-lCY) * 0.005;
-                euler.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, euler.x));
-                camera.quaternion.setFromEuler(euler);
-                lCX = t.clientX; lCY = t.clientY;
+                const dx = (velocity.x * Math.cos(euler.y) + velocity.z * Math.sin(euler.y)) * delta;
+                const dz = (-velocity.x * Math.sin(euler.y) + velocity.z * Math.cos(euler.y)) * delta;
+                tryMovePlayer(dx, dz);
+
+                camera.position.y += velocity.y * delta;
+                if (camera.position.y < playerEyeHeight) {
+                    velocity.y = 0;
+                    camera.position.y = playerEyeHeight;
+                    canJump = true;
+                }
+
+                const limit = citySize / 2 - 5;
+                if (camera.position.x > limit) camera.position.x = limit;
+                if (camera.position.x < -limit) camera.position.x = -limit;
+                if (camera.position.z > limit) camera.position.z = limit;
+                if (camera.position.z < -limit) camera.position.z = -limit;
+
+                checkInteractions();
             }
-        }
-    }, {passive: false});
 
-    document.addEventListener('touchend', e => {
-        for (let t of e.changedTouches) {
-            if (t.identifier === jT) {
-                joyKnob.style.transform = 'translate(-50%, -50%)';
-                joyX = 0; joyY = 0; jT = null;
+            const halfCity = citySize / 2;
+            cars.forEach(car => {
+                if (car.userData.axis === "x") {
+                    car.position.z = car.userData.fixedRoadCoordinate;
+                    car.position.x += car.userData.speed * car.userData.dir;
+                    if (Math.abs(car.position.x) > halfCity + 10) {
+                        car.position.x = (-halfCity - 10) * car.userData.dir;
+                    }
+                } else {
+                    car.position.x = car.userData.fixedRoadCoordinate;
+                    car.position.z += car.userData.speed * car.userData.dir;
+                    if (Math.abs(car.position.z) > halfCity + 10) {
+                        car.position.z = (-halfCity - 10) * car.userData.dir;
+                    }
+                }
+            });
+
+            coins.forEach((coin, index) => {
+                coin.rotation.z -= 2.0 * delta;
+
+                const guideActive = performance.now() < coinGuideUntil;
+                const baseCoinHeight = guideActive ? guideCoinHeight : 4.4;
+                coin.position.y = baseCoinHeight + Math.sin(time * 0.003 + index) * 0.7;
+
+                if (coin.userData.glow) {
+                    coin.userData.glow.position.copy(coin.position);
+                    const pulse = 1 + Math.sin(time * 0.004 + index) * 0.08;
+                    const guideScale = guideActive ? 1.75 : 1;
+                    coin.userData.glow.scale.set(pulse * guideScale, pulse * guideScale, pulse * guideScale);
+                }
+            });
+
+            prevTime = time;
+            renderer.render(scene, camera);
+        }
+
+        function downloadCertificate() {
+            const canvas = document.createElement("canvas");
+            canvas.width = 1600;
+            canvas.height = 1100;
+            const ctx = canvas.getContext("2d");
+
+            ctx.fillStyle = "#fffdf5";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = "#f59e0b";
+            ctx.lineWidth = 24;
+            ctx.strokeRect(55, 55, canvas.width - 110, canvas.height - 110);
+
+            ctx.strokeStyle = "#1d4ed8";
+            ctx.lineWidth = 8;
+            ctx.strokeRect(95, 95, canvas.width - 190, canvas.height - 190);
+
+            ctx.fillStyle = "#b45309";
+            ctx.font = "bold 78px Segoe UI, Arial";
+            ctx.textAlign = "center";
+            ctx.fillText("Certificado de Conclusão", canvas.width / 2, 220);
+
+            ctx.fillStyle = "#374151";
+            ctx.font = "38px Segoe UI, Arial";
+            ctx.fillText("Certificamos que", canvas.width / 2, 330);
+
+            ctx.fillStyle = "#1d4ed8";
+            ctx.font = "bold 66px Segoe UI, Arial";
+            wrapCanvasText(ctx, playerName, canvas.width / 2, 425, 1220, 76, true);
+
+            ctx.fillStyle = "#1f2937";
+            ctx.font = "38px Segoe UI, Arial";
+            wrapCanvasText(
+                ctx,
+                "terminou o desafio Cidade da Criatividade, encontrando as 30 moedas e completando a exploração dos murais sobre criatividade e música.",
+                canvas.width / 2,
+                605,
+                1220,
+                54,
+                true
+            );
+
+            ctx.fillStyle = "#475569";
+            ctx.font = "31px Segoe UI, Arial";
+            ctx.fillText(`Concluído em ${victoryDateTime}`, canvas.width / 2, 835);
+
+            ctx.fillStyle = "#64748b";
+            ctx.font = "27px Segoe UI, Arial";
+            ctx.fillText("Desenvolvido pelo professor Glauber Santiago — DAC/UFSCar", canvas.width / 2, 930);
+            ctx.fillText("servidores.ufscar.br/glauber/ • sites.google.com/view/glauberia", canvas.width / 2, 976);
+
+            const safeName = playerName
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-zA-Z0-9]+/g, "-")
+                .replace(/^-+|-+$/g, "")
+                .toLowerCase() || "aluno";
+
+            const link = document.createElement("a");
+            link.download = `certificado-cidade-da-criatividade-${safeName}.png`;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        }
+
+        function wrapCanvasText(ctx, text, x, y, maxWidth, lineHeight, centered = false) {
+            const words = text.split(" ");
+            let line = "";
+            let currentY = y;
+            for (let n = 0; n < words.length; n++) {
+                const testLine = line + words[n] + " ";
+                if (ctx.measureText(testLine).width > maxWidth && n > 0) {
+                    ctx.fillText(line.trim(), x, currentY);
+                    line = words[n] + " ";
+                    currentY += lineHeight;
+                } else {
+                    line = testLine;
+                }
             }
-            if (t.identifier === cT) cT = null;
+            ctx.fillText(line.trim(), x, currentY);
         }
-    });
-
-    function updateJoy(x, y) {
-        let dx = x-jCX, dy = y-jCY;
-        const r = joyRect.width/2;
-        const dist = Math.min(Math.sqrt(dx*dx+dy*dy), r);
-        const ang = Math.atan2(dy, dx);
-        const kX = Math.cos(ang)*dist, kY = Math.sin(ang)*dist;
-        joyKnob.style.transform = `translate(calc(-50% + ${kX}px), calc(-50% + ${kY}px))`;
-        joyX = kX/r; joyY = kY/r;
-    }
-}
-
-function onWindowResize() {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-}
-
-// ─── ANIMATION LOOP ───────────────────────────────────────────────────────────
-function animate() {
-    requestAnimationFrame(animate);
-    const time = performance.now();
-    const delta = Math.min((time - prevTime) / 1000, 0.1);
-
-    if (isLocked || isTouchDevice) {
-        velocity.x -= velocity.x * 10.0 * delta;
-        velocity.z -= velocity.z * 10.0 * delta;
-        velocity.y -= 9.8 * 42.0 * delta;
-
-        const mX = (Number(moveRight) - Number(moveLeft)) + joyX;
-        const mZ = (Number(moveBackward) - Number(moveForward)) + joyY;
-        direction.set(mX, 0, mZ);
-        if (direction.length() > 0) direction.normalize();
-
-        const speed = 170.0;
-        if (moveForward||moveBackward||Math.abs(joyY)>0.08) velocity.z += direction.z * speed * delta;
-        if (moveLeft||moveRight||Math.abs(joyX)>0.08) velocity.x += direction.x * speed * delta;
-
-        euler.setFromQuaternion(camera.quaternion);
-        camera.position.x += (velocity.x*Math.cos(euler.y) + velocity.z*Math.sin(euler.y)) * delta;
-        camera.position.z += (-velocity.x*Math.sin(euler.y) + velocity.z*Math.cos(euler.y)) * delta;
-        camera.position.y += velocity.y * delta;
-
-        if (camera.position.y < 5) { velocity.y = 0; camera.position.y = 5; canJump = true; }
-
-        const limit = CITY/2 - 5;
-        camera.position.x = Math.max(-limit, Math.min(limit, camera.position.x));
-        camera.position.z = Math.max(-limit, Math.min(limit, camera.position.z));
-
-        checkInteractions();
-    }
-
-    // Move cars
-    const halfC = CITY/2;
-    cars.forEach(car => {
-        if (car.userData.axis === 'x') {
-            car.position.x += car.userData.speed * car.userData.dir;
-            if (Math.abs(car.position.x) > halfC+12) car.position.x = (-halfC-12)*car.userData.dir;
-        } else {
-            car.position.z += car.userData.speed * car.userData.dir;
-            if (Math.abs(car.position.z) > halfC+12) car.position.z = (-halfC-12)*car.userData.dir;
-        }
-    });
-
-    // Animate coins
-    coins.forEach((coinGrp, idx) => {
-        coinGrp.rotation.y = time * 0.002;
-        const coin = coinGrp.children[0];
-        if (coin) coin.rotation.z -= 1.8 * delta;
-        coinGrp.position.y = 5 + Math.sin(time * 0.002 + idx * 0.8) * 0.6;
-    });
-
-    prevTime = time;
-    renderer.render(scene, camera);
-}
-</script>
+    </script>
 </body>
 </html>
