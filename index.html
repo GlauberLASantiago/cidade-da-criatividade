@@ -330,6 +330,8 @@
     <audio id="coinAudio" preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/cidade-da-criatividade/main/moeda.mp3"></audio>
     <audio id="jumpAudio" preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/cidade-da-criatividade/main/pulo.mp3"></audio>
     <audio id="carCrashAudio" preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/cidade-da-criatividade/main/colidiu.mp3"></audio>
+    <audio id="trafficAudio" preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/cidade-da-criatividade/main/transito.mp3"></audio>
+    <audio id="npcAudio" preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/cidade-da-criatividade/main/npc.mp3"></audio>
     <audio id="victoryAudio" preload="auto" src="https://raw.githubusercontent.com/GlauberLASantiago/cidade-da-criatividade/main/venceu.mp3"></audio>
 
     <div id="startScreen">
@@ -407,6 +409,7 @@
 
         const interactablePanels = [];
         const cars = [];
+        const npcs = [];
         const coins = [];
         const colliders = [];
         let coinsCollected = 0;
@@ -414,6 +417,8 @@
         let lastSpokenText = "";
         let gameStartedTime = 0;
         let lastCarCrashSound = 0;
+        let lastTrafficSound = 0;
+        let lastNpcSound = 0;
 
         const synth = window.speechSynthesis;
         const citySize = 540;
@@ -425,6 +430,13 @@
         const guideJumpStrength = 260;
         const guideCoinBaseHeight = 4.4;
         const guideCoinHeightMultiplier = 1.15;
+        const trafficSoundDistance = 34;
+        const npcSoundDistance = 16;
+        const trafficSoundCooldown = 2600;
+        const npcSoundCooldown = 3200;
+        const npcRadius = 2.7;
+        const npcWalkSpeed = 11.5;
+        const npcTurnCooldown = 500;
 
         function getRoadCoordinates() {
             const coords = [];
@@ -487,6 +499,8 @@
             coin: null,
             jump: null,
             carCrash: null,
+            traffic: null,
+            npc: null,
             victory: null
         };
 
@@ -535,6 +549,8 @@
             audioElements.coin = document.getElementById("coinAudio");
             audioElements.jump = document.getElementById("jumpAudio");
             audioElements.carCrash = document.getElementById("carCrashAudio");
+            audioElements.traffic = document.getElementById("trafficAudio");
+            audioElements.npc = document.getElementById("npcAudio");
             audioElements.victory = document.getElementById("victoryAudio");
 
             init();
@@ -768,6 +784,7 @@
                 }
             }
 
+            for (let i = 0; i < 18; i++) spawnNPC();
             for (let i = 0; i < 30; i++) spawnCar(half);
         }
 
@@ -918,6 +935,168 @@
             }
         }
 
+        function spawnNPC() {
+            const npcGroup = new THREE.Group();
+            const shirtColors = [0xef4444, 0x3b82f6, 0x22c55e, 0xf97316, 0xa855f7, 0x14b8a6, 0xf43f5e];
+            const pantsColors = [0x1f2937, 0x334155, 0x0f172a, 0x374151];
+
+            const body = new THREE.Mesh(
+                new THREE.CylinderGeometry(1.6, 1.9, 4.8, 14),
+                new THREE.MeshLambertMaterial({ color: shirtColors[Math.floor(Math.random() * shirtColors.length)] })
+            );
+            body.position.y = 4.2;
+            body.castShadow = true;
+            npcGroup.add(body);
+
+            const head = new THREE.Mesh(
+                new THREE.SphereGeometry(1.45, 18, 18),
+                new THREE.MeshLambertMaterial({ color: 0xf2c29b })
+            );
+            head.position.y = 7.55;
+            head.castShadow = true;
+            npcGroup.add(head);
+
+            const hair = new THREE.Mesh(
+                new THREE.SphereGeometry(1.48, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2),
+                new THREE.MeshLambertMaterial({ color: [0x2f1b12, 0x111827, 0x7c2d12][Math.floor(Math.random() * 3)] })
+            );
+            hair.position.y = 8.05;
+            npcGroup.add(hair);
+
+            const legMat = new THREE.MeshLambertMaterial({ color: pantsColors[Math.floor(Math.random() * pantsColors.length)] });
+            const leftLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.52, 3.1, 10), legMat);
+            leftLeg.position.set(-0.65, 1.55, 0);
+            leftLeg.castShadow = true;
+            npcGroup.add(leftLeg);
+
+            const rightLeg = leftLeg.clone();
+            rightLeg.position.x = 0.65;
+            npcGroup.add(rightLeg);
+
+            const smileCanvas = document.createElement("canvas");
+            smileCanvas.width = 128;
+            smileCanvas.height = 128;
+            const ctx = smileCanvas.getContext("2d");
+            ctx.fillStyle = "rgba(255,255,255,0)";
+            ctx.fillRect(0, 0, 128, 128);
+            ctx.fillStyle = "#111827";
+            ctx.beginPath(); ctx.arc(45, 48, 7, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(83, 48, 7, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = "#111827";
+            ctx.lineWidth = 7;
+            ctx.beginPath(); ctx.arc(64, 66, 28, 0.15 * Math.PI, 0.85 * Math.PI); ctx.stroke();
+            const face = new THREE.Mesh(
+                new THREE.PlaneGeometry(1.8, 1.8),
+                new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(smileCanvas), transparent: true })
+            );
+            face.position.set(0, 7.55, 1.25);
+            npcGroup.add(face);
+
+            const blocker = new THREE.Mesh(
+                new THREE.BoxGeometry(npcRadius * 2, 8.8, npcRadius * 2),
+                new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 })
+            );
+            blocker.position.y = 4.4;
+            blocker.visible = false;
+            blocker.userData.isNpcBlocker = true;
+            npcGroup.add(blocker);
+
+            let attempts = 0;
+            let x = 0, z = 0;
+            do {
+                x = (Math.random() * (citySize - 110)) - (citySize / 2) + 55;
+                z = (Math.random() * (citySize - 110)) - (citySize / 2) + 55;
+                attempts++;
+            } while (!isNpcAllowedAt(null, x, z) && attempts < 700);
+
+            if (attempts >= 700) return;
+
+            npcGroup.position.set(x, 0, z);
+            npcGroup.rotation.y = Math.random() * Math.PI * 2;
+            npcGroup.userData = {
+                walkAngle: Math.random() * Math.PI * 2,
+                bobOffset: Math.random() * Math.PI * 2,
+                nextTurnTime: performance.now() + Math.random() * 1200,
+                blocker: blocker
+            };
+
+            scene.add(npcGroup);
+            npcs.push(npcGroup);
+            addCollider(blocker, 0.25);
+        }
+
+        function getNpcBoxAt(x, z) {
+            return new THREE.Box3(
+                new THREE.Vector3(x - npcRadius, 0.2, z - npcRadius),
+                new THREE.Vector3(x + npcRadius, 8.9, z + npcRadius)
+            );
+        }
+
+        function isNpcAllowedAt(npc, x, z) {
+            const limit = citySize / 2 - 10;
+            if (x < -limit || x > limit || z < -limit || z > limit) return false;
+
+            // NPC fica somente na grama, com margem suficiente para não invadir ruas.
+            if (!isSafelyOnGrass(x, z, npcRadius + 2.2)) return false;
+
+            const npcBox = getNpcBoxAt(x, z);
+
+            for (const collider of colliders) {
+                if (npc && collider.mesh === npc.userData.blocker) continue;
+                if (collider.mesh.userData && collider.mesh.userData.isNpcBlocker) {
+                    const otherNpc = collider.mesh.parent;
+                    if (otherNpc === npc) continue;
+                }
+
+                const box = new THREE.Box3().setFromObject(collider.mesh);
+                if (collider.extraPadding) box.expandByScalar(collider.extraPadding);
+                if (box.intersectsBox(npcBox)) return false;
+            }
+
+            return true;
+        }
+
+        function chooseNpcDirection(npc) {
+            const now = performance.now();
+            npc.userData.walkAngle = Math.random() * Math.PI * 2;
+            npc.userData.nextTurnTime = now + 900 + Math.random() * 1800;
+        }
+
+        function updateNPCs(time, delta) {
+            const now = performance.now();
+
+            npcs.forEach((npc) => {
+                if (now >= npc.userData.nextTurnTime) chooseNpcDirection(npc);
+
+                const step = npcWalkSpeed * delta;
+                const dx = Math.sin(npc.userData.walkAngle) * step;
+                const dz = Math.cos(npc.userData.walkAngle) * step;
+                const nextX = npc.position.x + dx;
+                const nextZ = npc.position.z + dz;
+
+                if (isNpcAllowedAt(npc, nextX, nextZ)) {
+                    npc.position.x = nextX;
+                    npc.position.z = nextZ;
+                } else {
+                    const canMoveX = isNpcAllowedAt(npc, nextX, npc.position.z);
+                    const canMoveZ = isNpcAllowedAt(npc, npc.position.x, nextZ);
+
+                    if (canMoveX) npc.position.x = nextX;
+                    if (canMoveZ) npc.position.z = nextZ;
+
+                    if (!canMoveX && !canMoveZ && now - npc.userData.nextTurnTime > -npcTurnCooldown) {
+                        chooseNpcDirection(npc);
+                    } else if (!canMoveX || !canMoveZ) {
+                        npc.userData.walkAngle += Math.PI / 2 + (Math.random() - 0.5) * 0.8;
+                        npc.userData.nextTurnTime = now + 700 + Math.random() * 1200;
+                    }
+                }
+
+                npc.position.y = Math.abs(Math.sin(time * 0.004 + npc.userData.bobOffset)) * 0.10;
+                npc.rotation.y = npc.userData.walkAngle;
+            });
+        }
+
         function spawnCar(limit) {
             const carGroup = new THREE.Group();
             const colors = [0xff1744, 0x2979ff, 0xffea00, 0xffffff, 0x212121, 0x00e676, 0xf97316, 0xec4899];
@@ -1017,6 +1196,7 @@
             }
 
             checkCarHits();
+            checkProximitySounds();
         }
 
         function triggerVictory() {
@@ -1119,6 +1299,34 @@
             }
 
             if (blockedByCar) playCarCrashNow();
+        }
+
+        function checkProximitySounds() {
+            const now = performance.now();
+            const playerPos = camera.position;
+
+            let closestCarDistance = Infinity;
+            for (const car of cars) {
+                const distance = playerPos.distanceTo(car.position);
+                if (distance < closestCarDistance) closestCarDistance = distance;
+            }
+
+            if (closestCarDistance < trafficSoundDistance && now - lastTrafficSound > trafficSoundCooldown) {
+                const volume = Math.max(0.28, 1 - (closestCarDistance / trafficSoundDistance));
+                playAudio(audioElements.traffic, Math.min(0.85, volume + 0.15));
+                lastTrafficSound = now;
+            }
+
+            let closestNpcDistance = Infinity;
+            for (const npc of npcs) {
+                const distance = playerPos.distanceTo(npc.position);
+                if (distance < closestNpcDistance) closestNpcDistance = distance;
+            }
+
+            if (closestNpcDistance < npcSoundDistance && now - lastNpcSound > npcSoundCooldown) {
+                playAudio(audioElements.npc, 0.95);
+                lastNpcSound = now;
+            }
         }
 
         function checkCarHits() {
@@ -1314,6 +1522,8 @@
                     }
                 }
             });
+
+            updateNPCs(time, delta);
 
             coins.forEach((coin, index) => {
                 coin.rotation.z -= 2.0 * delta;
